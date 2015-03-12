@@ -1,5 +1,3 @@
-*
-!Makefile
-!*.hpp
-!*.cpp
-!.config
+*.o
+linkedlist-test
+assertion-tracker
