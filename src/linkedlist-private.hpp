@@ -15,7 +15,7 @@ LinkedList<T>::LinkedList()
 template<typename T>
 LinkedList<T>::~LinkedList<T>()
 {
-    while (size_ > 0) {
+    while (!empty()) {
         deleteFront();
     }
 }
@@ -29,8 +29,10 @@ size_t LinkedList<T>::size()
 template<typename T>
 void LinkedList<T>::insertFront(const T& element)
 {
-    Node* newFront = new Node(element, head_);
-    head_ = newFront;
+    head_ = new Node(element, head_);
+    if (size_ == 0) {
+        tail_ = head_;
+    }
     ++size_;
 }
 
@@ -38,30 +40,44 @@ void LinkedList<T>::insertFront(const T& element)
 template<typename T>
 void LinkedList<T>::insertBack(const T& element)
 {
-    Node* newBack = new Node(element, nullptr);
-    tail_->next_ = newBack;
-    tail_ = newBack;
-    ++size_;
+    if (size_ == 0) {
+        insertFront(element);
+    } else {
+        Node* newBack = new Node(element, nullptr);
+        tail_->next_ = newBack;
+        tail_ = newBack;
+        ++size_;
+    }
 }
 
 template<typename T>
 void LinkedList<T>::insertAfter(iterator where, const T& element)
 {
-
+    Node* currentNode = where.current_;
+    if (currentNode == tail_) {
+        insertBack(element);
+    } else {
+        currentNode->next_ = new Node(element, currentNode->next_);
+        ++size_;
+    }
 }
 
 template<typename T>
 T LinkedList<T>::deleteFront()
 {
-    if (size_ == 0) {
-        return NULL;
-    }
-    Node* oldFront = head_;
-    head_ = oldFront->next_;
-    T oldFrontVal = oldFront->element_;
-    delete oldFront;
+    assert(!empty());
+
+    T oldFrontVal = head_->element_;
+    Node* newFront = head_->next_;
+    delete head_;
+    head_ = newFront;
     --size_;
+
+    if (size_ == 0) {
+        tail_ = head_ = nullptr;
+    }
     return oldFrontVal;
+
 }
 
 template<typename T>
@@ -90,13 +106,20 @@ bool LinkedList<T>::contains(const T& element)
         return false;
     }
     Node* currentNode = head_;
-    while (currentNode->next_ != nullptr) {
+
+    while (currentNode != nullptr) {
         if (currentNode->element_ == element) {
             return true;
         }
         currentNode = currentNode->next_;
     }
     return false;
+}
+
+template<typename T>
+bool LinkedList<T>::empty()
+{
+    return (size_ == 0);
 }
 
 template<typename T>
@@ -119,12 +142,6 @@ LinkedList<T>::Node::Node(const T& element, Node* next)
     :element_{element}, next_{next}
 {
     // nothing else to do
-}
-
-template<typename T>
-LinkedList<T>::Node::~Node()
-{
-    // nothing to do
 }
 
 

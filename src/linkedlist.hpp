@@ -10,6 +10,8 @@
 #ifndef LINKEDLIST_HPP_INCLUDED
 #define LINKEDLIST_HPP_INCLUDED 1
 #include <cstddef>
+#include <cassert>
+#include <iostream>
 
 template <typename T>
 
@@ -103,7 +105,6 @@ private:
         T element_;
         Node* next_;
         Node(const T& element, Node* next);
-        ~Node();
 
         Node() = delete;
         Node& operator=(const Node&) = delete;
@@ -112,12 +113,27 @@ private:
     Node* head_;
     Node* tail_;
 
+    /**
+    * \brief
+    * returns true if the list is empty, false otherwise
+    */
+    bool empty();
+
     LinkedList<T>(const LinkedList& orig);  ///< Disable copy constructor
     LinkedList<T>& operator=(LinkedList orig);  ///< Disable assignment operator
 
     class Iterator
     {
     public:
+        // Definitions that are required for this class to be a well-behaved
+        // STL-style iterator that moves forward through a collection of T's.
+        using value_type = T;
+        using reference = value_type&;
+        using pointer = value_type*;
+        using difference_type = ptrdiff_t;
+        using iterator_category = std::forward_iterator_tag;
+
+        // Iterator operations
         Iterator& operator++();
         T& operator*() const;
         bool operator==(const Iterator& other) const;
