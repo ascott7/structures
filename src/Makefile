@@ -11,7 +11,7 @@ CXXFLAGS = -g -Wall -Wextra -pedantic
 CXX = clang++ -std=c++11
 
 TARGETS = linkedlist-test
-#GTEST_LIB =	-lgtest -lgtest_main
+GTEST_LIB =	-lgtest -lgtest_main
 
 
 
@@ -25,12 +25,9 @@ clean:
 test: linkedlist-test
 	./linkedlist-test
 
-linkedlist-test: linkedlist-test.o
-	$(CXX) $(CXXFLAGS) $^ -o $@
+linkedlist-test: linkedlist-test.o otter.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
 
 # ----- Dependencies -----
-
-hashtest.o: hashtest.cpp hashtable.hpp
-hashtable.o: hashtable.hpp hashtable.cpp
-linkedlist-test.o: linkedlist.hpp linkedlist-test.cpp
-linkedlist.o: linkedlist.hpp linkedlist-private.hpp
+otter.o: otter.cpp otter.hpp
+linkedlist-test.o: linkedlist-test.cpp
