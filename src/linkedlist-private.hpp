@@ -85,17 +85,22 @@ T LinkedList<T>::deleteBack()
 {
     if (size_ == 0) {
         return NULL;
+    } if (size_ == 1) {
+        return deleteFront();
+    } else {
+        Node* oldBack = tail_;
+        Node* currentNode = head_;
+        // loop until we are one away from the last element
+        while (currentNode->next_->element_ != oldBack->element_) {
+            currentNode = currentNode->next_;
+        }
+
+        tail_ = currentNode;
+        T oldBackVal = oldBack->element_;
+        delete oldBack;
+        --size_;
+        return oldBackVal;
     }
-    Node* oldBack = tail_;
-    Node* currentNode = head_;
-    while (currentNode->next_->element_ != oldBack->element_) {
-        currentNode = currentNode->next_;
-    }
-    tail_ = currentNode;
-    T oldBackVal = oldBack->element_;
-    delete oldBack;
-    --size_;
-    return oldBackVal;
 
 }
 
