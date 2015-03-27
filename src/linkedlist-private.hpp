@@ -13,7 +13,7 @@ LinkedList<T>::LinkedList()
 }
 
 template<typename T>
-LinkedList<T>::~LinkedList<T>()
+LinkedList<T>::~LinkedList()
 {
     while (!empty()) {
         deleteFront();
@@ -21,7 +21,39 @@ LinkedList<T>::~LinkedList<T>()
 }
 
 template<typename T>
-size_t LinkedList<T>::size()
+LinkedList<T>::LinkedList(const LinkedList<T>& orig)
+            : size_{0}, head_{nullptr}, tail_{nullptr}
+{
+    for (iterator i = orig.begin(); i != orig.end(); ++i) {
+        insertBack(*i);
+    }
+}
+
+template<typename T>
+LinkedList<T>& LinkedList<T>::operator=(const LinkedList<T>& rhs)
+{
+    LinkedList<T> copy{rhs};
+    swap(copy);
+    return *this;
+}
+
+template<typename T>
+void LinkedList<T>::swap(LinkedList<T>& rhs)
+{
+    using std::swap;
+    swap(head_, rhs.head_);
+    swap(tail_, rhs.tail_);
+    swap(size_, rhs.size_);
+}
+
+template<typename T>
+void swap(LinkedList<T>& lhs, LinkedList<T>& rhs)
+{
+    lhs.swap(rhs);
+}
+
+template<typename T>
+size_t LinkedList<T>::size() const
 {
     return size_;
 }
@@ -101,7 +133,42 @@ T LinkedList<T>::deleteBack()
         --size_;
         return oldBackVal;
     }
+}
 
+template<typename T>
+bool LinkedList<T>::deleteElement(const T& element)
+{
+    if (size_ == 0) {
+        return false;
+    }
+    if (head_->element_ == element) {
+            deleteFront();
+            return true;
+    }
+    /*if (size_ == 1) {
+        if (head_->element_ == element) {
+            deleteFront();
+            return true;
+        } else {
+            return false;
+        }
+    }*/
+    Node* currentNode = head_;
+
+    while (currentNode->next_ != nullptr) {
+        if (currentNode->next_->element_ == element) {
+            Node* nodeToDelete = currentNode->next_;
+            currentNode->next_ = currentNode->next_->next_;
+            delete nodeToDelete;
+            --size_;
+            if (currentNode->next_ == nullptr) {
+                tail_ = currentNode;
+            }
+            return true;
+        }
+        currentNode = currentNode->next_;
+    }
+    return false;
 }
 
 template<typename T>
@@ -126,6 +193,34 @@ bool LinkedList<T>::empty()
 {
     return (size_ == 0);
 }
+
+template<typename T>
+bool LinkedList<T>::operator==(const LinkedList<T>& rhs) const
+{
+    if (size() != rhs.size()) {
+        return false;
+    }
+
+    iterator thisIter = begin();
+    iterator rhsIter = rhs.begin();
+
+    while (thisIter != end()) {
+        if (*thisIter != *rhsIter) {
+            return false;
+        }
+        ++thisIter;
+        ++rhsIter;
+    }
+    return true;
+}
+
+
+template<typename T>
+bool LinkedList<T>::operator!=(const LinkedList<T>& rhs) const
+{
+    return !(*this == rhs);
+}
+
 
 template<typename T>
 typename LinkedList<T>::iterator LinkedList<T>::begin() const

@@ -32,14 +32,36 @@ public:
     * Default Constructor
     *
     */
-    LinkedList<T>();
+    LinkedList();
+
+    /**
+    * \brief
+    * Copy Constructor
+    *
+    */
+    LinkedList<T>(const LinkedList<T>& orig);
+
+    /**
+    * \brief
+    * Assignment Operator
+    *
+    */
+    LinkedList<T>& operator=(const LinkedList<T>& rhs);
+
+    /**
+    * \brief
+    * Linked List swap function
+    *
+    *
+    */
+    void swap(LinkedList<T>& rhs);
 
     /**
     * \brief 
     * Default Destructor
     *
     */
-    ~LinkedList<T>();
+    ~LinkedList();
 
     /**
     * \brief 
@@ -47,7 +69,7 @@ public:
     *
     * \returns the number of elements in the list
     */
-    size_t size();
+    size_t size() const;
 
     // Allow users to iterate over the contents of the list. 
     using iterator = Iterator; 
@@ -74,6 +96,8 @@ public:
     * \brief 
     * Inserts an element to the list after the specified iterator
     *
+    * \note constant time
+    *
     * \details The iterator cannot be end()
     */
     void insertAfter(iterator where, const T& element);
@@ -82,6 +106,7 @@ public:
     * \brief 
     * Deletes the first element of the list
     *
+    * \note constant time
     */
     T deleteFront();
 
@@ -90,8 +115,20 @@ public:
     * \brief 
     * Deletes the last element of the list
     *
+    * \note linear time
     */
     T deleteBack();
+
+    /**
+    * \brief 
+    * Deletes a particular element in the list
+    *
+    * \returns
+    * true if the element was deleted, false otherwise
+    *
+    * \note linear time
+    */
+    bool deleteElement(const T& element);
 
     /**
     * \brief 
@@ -99,6 +136,26 @@ public:
     *
     */
     bool contains(const T& element);
+
+    /**
+    * \brief
+    * Linked List equality operator
+    *
+    */
+    bool operator==(const LinkedList<T>& rhs) const;
+
+    /**
+    * \brief
+    * Linked List inequality operator
+    *
+    */
+    bool operator!=(const LinkedList<T>& rhs) const;
+
+    /**
+    * \brief
+    * returns true if the list is empty, false otherwise
+    */
+    bool empty();
 
 private:
     struct Node {
@@ -112,15 +169,6 @@ private:
     size_t size_;
     Node* head_;
     Node* tail_;
-
-    /**
-    * \brief
-    * returns true if the list is empty, false otherwise
-    */
-    bool empty();
-
-    LinkedList<T>(const LinkedList& orig);  ///< Disable copy constructor
-    LinkedList<T>& operator=(LinkedList orig);  ///< Disable assignment operator
 
     class Iterator
     {
@@ -146,6 +194,9 @@ private:
     };
 };
 
+template<typename T>
+/// Provide a non-member version of swap to allow standard swap(x,y) usage.
+void swap(LinkedList<T>& lhs, LinkedList<T>& rhs);
 
 #include "linkedlist-private.hpp"
 
