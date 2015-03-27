@@ -115,9 +115,8 @@ T LinkedList<T>::deleteFront()
 template<typename T>
 T LinkedList<T>::deleteBack()
 {
-    if (size_ == 0) {
-        return NULL;
-    } if (size_ == 1) {
+    assert(!empty());
+    if (size_ == 1) {
         return deleteFront();
     } else {
         Node* oldBack = tail_;
@@ -145,14 +144,6 @@ bool LinkedList<T>::deleteElement(const T& element)
             deleteFront();
             return true;
     }
-    /*if (size_ == 1) {
-        if (head_->element_ == element) {
-            deleteFront();
-            return true;
-        } else {
-            return false;
-        }
-    }*/
     Node* currentNode = head_;
 
     while (currentNode->next_ != nullptr) {
