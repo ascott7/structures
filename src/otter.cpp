@@ -27,12 +27,12 @@ void Otter::cleanFur()
     clean_ = true;
 }
 
-bool Otter::operator==(const Otter& comparee)
+bool Otter::operator==(const Otter& comparee) const
 {
     return name_ == comparee.name_;
 }
 
-bool Otter::operator!=(const Otter& comparee)
+bool Otter::operator!=(const Otter& comparee) const
 {
     return !(*this == comparee);
 }
