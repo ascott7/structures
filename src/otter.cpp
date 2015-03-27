@@ -29,7 +29,7 @@ void Otter::cleanFur()
 
 bool Otter::operator==(const Otter& comparee)
 {
-    return clean_ == comparee.clean_ && hungry_ == comparee.hungry_;
+    return name_ == comparee.name_;
 }
 
 bool Otter::operator!=(const Otter& comparee)
