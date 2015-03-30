@@ -12,8 +12,6 @@
 
 #include "randomtree.hpp"
 #include <iostream>
-//#include <cstddef>
-#include <iterator>      // std::advance()
 #include <stdlib.h>      // rand(), srand()
 #include <time.h>       // time
 #include <gtest/gtest.h>
@@ -39,17 +37,20 @@ TEST(randomTreeStringTest, insertTests)
         stringTree.insert(test);
         EXPECT_TRUE(stringTree.contains(test));
     }
-    EXPECT_TRUE(stringTree.height() < 50); // checks that tree is somewhat branching
+    // checks that tree is somewhat branching and is not forming a stick
+    EXPECT_TRUE(stringTree.height() < 50);
     stringTree.printStatistics(std::cout);
 }
 
-TEST(randomTreeStringTest, treeEqualityTests)
+TEST(randomTreeStringTest, basicEqualityTests)
 {
     RandomTree<string> stringTree;
     RandomTree<string> stringTree2;
+    //std::cout << "comparing empty string trees" << std::endl;
     EXPECT_TRUE(stringTree == stringTree2);
     string test = "hello world";
     stringTree.insert(test);
+    //std::cout << "comparing one empty tree, one nonempty" << std::endl;
     ASSERT_NE(stringTree, stringTree2);
     stringTree2.insert(test);
     ASSERT_EQ(stringTree, stringTree2);
@@ -64,17 +65,36 @@ TEST(randomTreeStringTest, copyConstructorTests)
     string test = "hello world";
     stringTree.insert(test);
     RandomTree<string> stringTree2{stringTree};
+    // tests copy constructor copying one element tree
     ASSERT_EQ(stringTree, stringTree2);
     string test2 = "hello again";
     stringTree.insert(test2);
+    // make sure the copied tree is different after adding an element to it
     ASSERT_NE(stringTree, stringTree2);
     for (int i = 0; i < 100; ++i) {
         string test = std::to_string(i);
         stringTree2.insert(test);
     }
     RandomTree<string> stringTree3{stringTree2};
+    // test copying a larger tree
+    // also tests equality operator on larger trees
     ASSERT_EQ(stringTree2, stringTree3);
     ASSERT_NE(stringTree, stringTree3);
+}
+
+TEST(randomTreeIntTest, iteratorTests)
+{
+    // using ints for the iterator tests so we can check dereferences work
+    // with a simple for loop (string comparison gets weird, '19' < '2')
+    RandomTree<int> intTree;
+    for (int i = 0; i < 100; ++i) {
+        intTree.insert(i);
+    }
+    int num = 0;
+    for (RandomTree<int>::iterator i = intTree.begin(); i != intTree.end(); ++i) {
+        ASSERT_EQ(num, *i);
+        ++num;
+    }
 }
 /*
 TEST(randomTreeStringTest, copyConstructorTests)
@@ -200,7 +220,32 @@ TEST(randomTreeStringTest, deleteElementTests)
         EXPECT_FALSE(stringList.contains(test)) << "list should no longer have element";
     }
     EXPECT_TRUE(stringList.size() < 1000) << "list should have deleted at least one element";
+}*/
+
+TEST(randomTreeOtterTest, insertTests)
+{
+    RandomTree<Otter> otterTree;
+    Otter p = Otter{"phokey"};
+    EXPECT_FALSE(otterTree.contains(p));
+    otterTree.insert(p);
+    EXPECT_TRUE(otterTree.contains(p));
+    EXPECT_TRUE(otterTree.size() == 1);
+    Otter o2 = Otter{"another otter"};
+    otterTree.insert(o2);
+    EXPECT_TRUE(otterTree.contains(o2));
+    EXPECT_TRUE(otterTree.size() == 2);
+    for (int i = 0; i < 100; ++i) {
+        Otter test = Otter{std::to_string(i)};
+        EXPECT_FALSE(otterTree.contains(test));
+        otterTree.insert(test);
+        EXPECT_TRUE(otterTree.contains(test));
+    }
+    // checks that tree is somewhat branching and is not forming a stick
+    EXPECT_TRUE(otterTree.height() < 50);
+    otterTree.printStatistics(std::cout);
 }
+
+/*
 
 TEST(randomTreeOtterTest, insertFrontTests)
 {
