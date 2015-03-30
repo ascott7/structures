@@ -11,6 +11,10 @@ public:
     void cleanFur();
     bool operator==(const Otter& comparee) const;
     bool operator!=(const Otter& comparee) const;
+    bool operator<(const Otter& comparee) const;
+    bool operator>(const Otter& comparee) const;
+    bool operator<=(const Otter& comparee) const;
+    bool operator>=(const Otter& comparee) const;
 
 private:
     std::string name_;
