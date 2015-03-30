@@ -35,19 +35,7 @@ linkedlist-test: linkedlist-test.o otter.o
 randomtree-test: randomtree-test.o otter.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
 
-#linkedlist-int-test: linkedlist-int-test.o
-#	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
-
-#linkedlist-string-test: linkedlist-string-test.o
-#	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
-
-#linkedlist-otter-test: linkedlist-otter-test.o otter.o
-#	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
-
 # ----- Dependencies -----
 otter.o: otter.cpp otter.hpp
 linkedlist-test.o: linkedlist-test.cpp
 randomtree-test.o: randomtree-test.cpp
-#linkedlist-otter-test.o: linkedlist-otter-test.cpp
-#linkedlist-string-test.o: linkedlist-string-test.cpp
-#linkedlist-int-test.o: linkedlist-int-test.cpp
