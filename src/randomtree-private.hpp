@@ -22,7 +22,7 @@ template<typename T>
 RandomTree<T>::RandomTree(const RandomTree<T>& orig)
             : size_{0}, root_{nullptr}
 {
-    for (RandomTree<T>::iterator i = orig.begin(); i != orig.end(); ++i) {
+    for (iterator i = orig.begin(); i != orig.end(); ++i) {
         insert(*i);
     }
 }
@@ -135,21 +135,6 @@ bool RandomTree<T>::operator==(const RandomTree<T>& rhs) const
         ++rhsIter;
     }
     return true;
-    /*// if both trees are empty they are equal
-    else if (root_ == nullptr && rhs.root_ == nullptr) {
-        return true;
-    }
-    // if one tree is empty but not the other, the trees are not equal
-    else if (root_ == nullptr && rhs.root_ != nullptr) {
-        return false;
-    } else if (root_ != nullptr && rhs.root_ == nullptr) {
-        return false;
-    }
-    // if both trees are not empty we have to check the equality of their
-    // root nodes using node equality
-    else {
-        return *root_ == *rhs.root_;
-    }*/
 }
 
 
