@@ -30,74 +30,112 @@ TEST(linkedListStringTest, insertFrontTests)
     string test = "hello world";
     EXPECT_FALSE(stringList.contains(test));
     stringList.insertFront(test);
+    // check that the insert worked on an empty list (also tests contains)
     EXPECT_TRUE(stringList.contains(test));
+    // check that the size function works
     EXPECT_TRUE(stringList.size() == 1);
     string test2 = "hello again";
     stringList.insertFront(test2);
+    // check that insertFront works on a nonempty list
     EXPECT_TRUE(stringList.contains(test2));
     EXPECT_TRUE(stringList.size() == 2);
     for (int i = 0; i < 100; ++i) {
         string test = std::to_string(i);
         EXPECT_FALSE(stringList.contains(test));
         stringList.insertFront(test);
+        // check that insertFront and contains both work with a larger list
         EXPECT_TRUE(stringList.contains(test));
     }
+}
+
+TEST(linkedListStringTest, listEqualityTests)
+{
+    LinkedList<string> stringList;
+    LinkedList<string> stringList2;
+    // check that equality works on empty lists
+    ASSERT_EQ(stringList, stringList2);
+    string test = "hello world";
+    stringList.insertFront(test);
+    // check that inequality works with one list being empty
+    ASSERT_NE(stringList, stringList2);
+    stringList2.insertFront(test);
+    // check that equality works on two lists of size 1
+    ASSERT_EQ(stringList, stringList2);
+    for (int i = 0; i < 1000; ++i) {
+        test = std::to_string(i);
+        stringList.insertFront(test);
+        stringList2.insertFront(test);
+        // check that equality works on larger lists
+        ASSERT_EQ(stringList, stringList2);
+    }
+
 }
 
 TEST(linkedListStringTest, copyConstructorTests)
 {
     LinkedList<string> stringList;
+    LinkedList<string> stringList2{stringList};
+    // check that the copy constructor works with empty lists
+    ASSERT_EQ(stringList, stringList2);
     string test = "hello world";
     stringList.insertFront(test);
-    LinkedList<string> stringList2{stringList};
-    EXPECT_TRUE(stringList == stringList2);
-    string test2 = "hello again";
-    stringList.insertFront(test2);
-    EXPECT_TRUE(stringList != stringList2);
+    // check that stringList was modified separately from its copy
+    ASSERT_NE(stringList, stringList2);
     for (int i = 0; i < 1000; ++i) {
         stringList2.insertFront(std::to_string(i));
     }
     LinkedList<string> stringList3{stringList2};
-    EXPECT_TRUE(stringList2 == stringList3);
-    stringList3.deleteFront();
+    // check that the copy constructor works with larger lists
+    ASSERT_EQ(stringList2, stringList3);
+    stringList3.insertFront(test);
+    // check that stringList2 wasn't modified by the insert to stringList3
     EXPECT_TRUE(stringList2 != stringList3);
 }
 
 TEST(linkedListStringTest, assignmentOperatorTests)
 {
     LinkedList<string> stringList;
+    LinkedList<string> stringList2;
+    stringList2 = stringList;
+    // check that assignment operator works on empty lists
+    ASSERT_EQ(stringList, stringList2);
     string test = "hello world";
     stringList.insertFront(test);
-    LinkedList<string> stringList2;
+    // check that modifying stringList doesn't modify stringList2
     ASSERT_NE(stringList, stringList2);
     stringList2 = stringList;
+    // check that assignment operator works on list of size 1
     ASSERT_EQ(stringList, stringList2);
     for (int i = 0; i < 1000; ++i) {
-        stringList2.insertFront(std::to_string(i));
+        stringList.insertFront(std::to_string(i));
     }
+    // check that modifying stringList doesn't modify stringList2
     ASSERT_NE(stringList, stringList2);
-    LinkedList<string> stringList3;
-    ASSERT_NE(stringList2, stringList3);
-    stringList3 = stringList2;
-    ASSERT_EQ(stringList2, stringList3);
+    stringList2 = stringList;
+    // check that assignment operator works on larger lists
+    ASSERT_EQ(stringList, stringList2);
 }
 
 TEST(linkedListStringTest, insertBackTests)
 {
     LinkedList<string> stringList;
     string test = "hello world";
+    // tests contains on an empty list
     EXPECT_FALSE(stringList.contains(test));
     stringList.insertBack(test);
+    // check that insertBack works on an empty list
     EXPECT_TRUE(stringList.contains(test));
     EXPECT_TRUE(stringList.size() == 1);
     string test2 = "hello again";
     stringList.insertBack(test2);
+    // check that insertBack works on a nonempty list
     EXPECT_TRUE(stringList.contains(test2));
     EXPECT_TRUE(stringList.size() == 2);
     for (int i = 0; i < 100; ++i) {
         string test = std::to_string(i);
         EXPECT_FALSE(stringList.contains(test));
         stringList.insertBack(test);
+        // check that insertBack works on larger lists
         EXPECT_TRUE(stringList.contains(test));
     }
 }
@@ -107,14 +145,17 @@ TEST(linkedListStringTest, insertAfterTests)
     srand (time(NULL));
     LinkedList<string> stringList;
     string test = "hello world";
-    stringList.insertFront(test);
+    stringList.insertAfter(stringList.begin(), test);
+    // check that insertAfter works on an empty list
     EXPECT_TRUE(stringList.contains(test));
     for (int i = 0; i < 1000; ++i) {
         LinkedList<string>::iterator it = stringList.begin();
         string s = std::to_string(i);
         int advanceDist = rand() % stringList.size();
+        // advance the iterator a random amount
         std::advance(it, advanceDist);
         stringList.insertAfter(it, s);
+        // check that insertAfter works
         EXPECT_TRUE(stringList.contains(s));
     }
 }
@@ -127,7 +168,9 @@ TEST(linkedListStringTest, deleteBackTests)
     }
     for (int i = 0; i < 1000; ++i) {
         string deletee = stringList.deleteBack();
+        // check that deleteBack is returning the correct value
         ASSERT_EQ(deletee, std::to_string(i));
+        // check that deleteBack is reducing the size of the list
         ASSERT_EQ(stringList.size(), 999 - i);
     }
 }
@@ -140,7 +183,9 @@ TEST(linkedListStringTest, iteratorTests)
     }
 
     int j = 999;
+    // for loop tests begin(), end(), ==, and ++
     for (LinkedList<string>::iterator i = stringList.begin(); i != stringList.end(); ++i) {
+        // check that iterator dereference works
         EXPECT_TRUE(*i == std::to_string(j));
         --j;
     }
@@ -152,8 +197,9 @@ TEST(linkedListStringTest, deleteElementTests)
     LinkedList<string> stringList;
     string test = "hello world";
     stringList.insertFront(test);
-    EXPECT_TRUE(stringList.contains(test));
-    stringList.deleteElement(test);
+    // check that deleteElement returns true when deleting an element
+    EXPECT_TRUE(stringList.deleteElement(test));
+    // check that deleteElement works on an list of size 1
     EXPECT_FALSE(stringList.contains(test));
     for (int i = 0; i < 1000; ++i) {
         string test = std::to_string(i);
@@ -163,11 +209,20 @@ TEST(linkedListStringTest, deleteElementTests)
     ASSERT_EQ(stringList.size(), 1000) << "list should have 1000 elements";
     for (int i = 0; i < 1000; ++i) {
         string test = std::to_string(rand() % 1000);
-        stringList.deleteElement(test);
+        bool canDelete = stringList.contains(test);
+        bool deleted = stringList.deleteElement(test);
+        // check that deleteElement is returning the correct value
+        ASSERT_EQ(canDelete, deleted);
+        // check that the list no longer contains the element
         EXPECT_FALSE(stringList.contains(test)) << "list should no longer have element";
     }
+    // check that the list size has decreased
     EXPECT_TRUE(stringList.size() < 1000) << "list should have deleted at least one element";
 }
+
+// we then test the linked list with a custom class to make sure that it's
+// functionality is not dependent on the type of the list being from the
+// standard library or a built in type.
 
 TEST(linkedListOtterTest, insertFrontTests)
 {
