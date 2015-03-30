@@ -20,12 +20,14 @@ RandomTree<T>::~RandomTree()
 
 template<typename T>
 RandomTree<T>::RandomTree(const RandomTree<T>& orig)
-            : size_{orig.size()}
+            : size_{0}, root_{nullptr}
 {
-    root_ = copyNode(orig.root_);
+    for (RandomTree<T>::iterator i = orig.begin(); i != orig.end(); ++i) {
+        insert(*i);
+    }
 }
 
-template<typename T>
+/*template<typename T>
 typename RandomTree<T>::Node* RandomTree<T>::copyNode(const RandomTree<T>::Node* node)
 {
     if (node == nullptr) {
@@ -34,7 +36,7 @@ typename RandomTree<T>::Node* RandomTree<T>::copyNode(const RandomTree<T>::Node*
     Node* left = copyNode(node->left_);
     Node* right = copyNode(node->right_);
     return new Node(node->element_, left, right);
-}
+}*/
 
 template<typename T>
 RandomTree<T>& RandomTree<T>::operator=(const RandomTree<T>& rhs)
@@ -121,7 +123,19 @@ bool RandomTree<T>::operator==(const RandomTree<T>& rhs) const
     if (size() != rhs.size()) {
         return false;
     }
-    // if both trees are empty they are equal
+
+    iterator thisIter = begin();
+    iterator rhsIter = rhs.begin();
+
+    while (thisIter != end()) {
+        if (*thisIter != *rhsIter) {
+            return false;
+        }
+        ++thisIter;
+        ++rhsIter;
+    }
+    return true;
+    /*// if both trees are empty they are equal
     else if (root_ == nullptr && rhs.root_ == nullptr) {
         return true;
     }
@@ -135,7 +149,7 @@ bool RandomTree<T>::operator==(const RandomTree<T>& rhs) const
     // root nodes using node equality
     else {
         return *root_ == *rhs.root_;
-    }
+    }*/
 }
 
 
@@ -232,6 +246,29 @@ std::ostream& RandomTree<T>::print(std::ostream& out) const
     return out;
 }
 
+template<typename T>
+typename RandomTree<T>::iterator RandomTree<T>::begin() const
+{
+    Node* current = root_;
+    std::stack<Node*> parents;
+    // if tree is empty, we don't want to dereference current
+    if (current == nullptr) {
+        return Iterator(current, parents);
+    }
+    while (current->left_ != nullptr) {
+        parents.push(current);
+        current = current->left_;
+    }
+    return Iterator(current, parents);
+}
+
+template<typename T>
+typename RandomTree<T>::iterator RandomTree<T>::end() const
+{
+    std::stack<Node*> parents;
+    return Iterator(nullptr, parents);
+}
+
 // --------------------------------------
 // Implementation of RandomTree::Node
 // --------------------------------------
@@ -263,7 +300,7 @@ size_t RandomTree<T>::Node::size() const
     return size;
 }
 
-template<typename T>
+/*template<typename T>
 bool RandomTree<T>::Node::operator==(const RandomTree::Node& rhs) const
 {
     // if the elements in the two nodes aren't the same, we are done
@@ -306,7 +343,7 @@ bool RandomTree<T>::Node::operator==(const RandomTree::Node& rhs) const
     else {
         return *left_ == *rhs.left_ && *right_ == *rhs.right_;
     }
-}
+}*/
 
 template<typename T>
 std::ostream& RandomTree<T>::Node::print(std::ostream& out) const
@@ -328,3 +365,105 @@ std::ostream& RandomTree<T>::Node::print(std::ostream& out) const
     out << ")";
     return out;
 }
+
+// --------------------------------------
+// Implementation of RandomTree::Iterator
+// --------------------------------------
+template<typename T>
+RandomTree<T>::Iterator::Iterator(Node* index, std::stack<Node*> parents)
+    : current_{index}, parents_{parents}
+{
+    // Nothing else to do.
+}
+
+template<typename T>
+typename RandomTree<T>::Iterator& RandomTree<T>::Iterator::operator++()
+{
+    bool lastElement = false;
+    // empty tree
+    if (current_ == nullptr) {
+        return *this;
+    }
+    // tree of size 1
+    if (current_->left_ == nullptr && current_->right_ == nullptr && parents_.size() == 0) {
+        current_ = nullptr;
+        return *this;
+    }
+    // if there's something to the right, we go there then go as far to the left
+    // as we can, for example to get from 10 to 11 in this tree
+    //            10
+    //           /  \
+    //          5    15
+    //              /
+    //             12
+    //            /
+    //           11
+    if (current_->right_ != nullptr) {
+        // one step to the right
+        parents_.push(current_);
+        current_ = current_->right_;
+        // go as far to the left as we can
+        while (current_->left_ != nullptr) {
+            parents_.push(current_);
+            current_ = current_->left_;
+        }
+    } 
+    // nothing to the right and at the root node, which means we are at the
+    // last element in the tree
+    else if (current_->right_ == nullptr && parents_.size() == 0) {
+        current_ = nullptr;
+        return *this;
+    }
+    // at this point we must go back up the tree to get to the next largest 
+    // value
+    // if stepping back up to the parent gives us a larger value, then we stop
+    else if (parents_.top()->element_ > current_->element_) {
+        current_ = parents_.top();
+        parents_.pop();
+    } 
+    // if stepping back up to the parent gives us a smaller value, then we keep
+    // going up until we hit a larger value
+    else if (parents_.top()->element_ < current_->element_) {
+        while (parents_.top()->element_ < current_->element_) {
+            // step up to the parent of the current node
+            current_ = parents_.top();
+            parents_.pop();
+            // if we have stepped all the way up to the root node and it is
+            // less than the current node, we must have been coming from the
+            // largest element, and thus we are at the end
+            if (parents_.size() == 0) {
+                lastElement = true;
+                break;
+            }
+        }
+        // one more pop to get to the element that is greater than the current one
+        if (!lastElement) {
+            current_ = parents_.top();
+            parents_.pop();
+        } 
+        // if we were at the last element, return the equivalent of the end()
+        else {
+            current_ = nullptr;
+        }
+    }
+    return *this;
+}
+
+template<typename T>
+T& RandomTree<T>::Iterator::operator*() const
+{
+    return current_->element_;
+}
+
+template<typename T>
+bool RandomTree<T>::Iterator::operator==(const Iterator& rhs) const
+{
+    return (current_ == rhs.current_);
+}
+
+template<typename T>
+bool RandomTree<T>::Iterator::operator!=(const Iterator& rhs) const
+{
+    return !(*this == rhs);
+}
+

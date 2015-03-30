@@ -14,6 +14,7 @@
 #include <iostream>
 #include <time.h>       // time
 #include <stdlib.h>     // rand(), srand()
+#include <stack>        // std::stack
 
 template <typename T>
 
@@ -24,8 +25,8 @@ template <typename T>
 
 class RandomTree {
 
-//private:
-//    class Iterator; // Forward declaration
+private:
+   class Iterator; // Forward declaration1
 
 public:
     typedef size_t              size_type;
@@ -64,6 +65,11 @@ public:
     *
     */
     ~RandomTree();
+
+    // Allow users to iterate over the contents of the list. 
+    using iterator = Iterator; 
+    iterator begin() const; ///< An iterator that refers to the first element
+    iterator end() const;   ///< A "past-the-end" iterator
 
     /**
     * \brief 
@@ -165,7 +171,7 @@ private:
         */
         size_t size() const;
 
-        bool operator==(const RandomTree::Node& rhs) const;
+        //bool operator==(const RandomTree::Node& rhs) const;
 
         /**
         * \brief Print a node
@@ -239,7 +245,31 @@ private:
     * \brief returns a copy of a node
     *
     */
-    Node* copyNode(const Node* node);
+    //Node* copyNode(const Node* node);
+
+    class Iterator
+    {
+    public:
+        // Definitions that are required for this class to be a well-behaved
+        // STL-style iterator that moves forward through a collection of T's.
+        using value_type = T;
+        using reference = value_type&;
+        using pointer = value_type*;
+        using difference_type = ptrdiff_t;
+        using iterator_category = std::forward_iterator_tag;
+
+        // Iterator operations
+        Iterator& operator++();
+        T& operator*() const;
+        bool operator==(const Iterator& other) const;
+        bool operator!=(const Iterator& other) const;
+
+    private:
+        friend class RandomTree;
+        Iterator(Node* index, std::stack<Node*> parents);
+        Node* current_;
+        std::stack<Node*> parents_;
+    };
 
 };
 
