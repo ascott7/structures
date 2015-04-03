@@ -15,6 +15,9 @@
 #include <time.h>       // time
 #include <stdlib.h>     // rand(), srand()
 #include <stack>        // std::stack
+#include <list>
+ #include <iomanip>
+ #include <cmath>
 
 template <typename T>
 
@@ -89,7 +92,7 @@ public:
     * Inserts an element into the tree
     *
     */
-    void insert(const T& element);
+    bool insert(const T& element);
 
     /**
     * \brief 
@@ -149,6 +152,7 @@ public:
      */
     std::ostream& printStatistics(std::ostream& out) const;
 
+
 private:
     struct Node {
         T element_;    ///> the element at this node
@@ -187,6 +191,15 @@ private:
     Node* root_;
 
     /**
+    * \brief pretty prints the tree
+    *
+    */
+    void printPretty(Node* root, int level, int indentSpace, std::ostream& out) const;
+    void printLeaves(int indentSpace, int level, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const;
+    void printNodes(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const;
+    void printBranches(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const;
+
+    /**
      * \brief
      * Rotates the tree to the right
      *
@@ -212,7 +225,7 @@ private:
      * \param here The node to insert at
      * \param element The element to insert
      */
-    void insertNode(Node*& here, const T& element);
+    bool insertNode(Node*& here, const T& element);
 
     /**
     * \brief
@@ -222,7 +235,7 @@ private:
     * \param element The element to insert
     *
     */
-    void insertNodeAtRoot(Node*& here, const T& element);
+    bool insertNodeAtRoot(Node*& here, const T& element);
 
     /**
      * \brief
@@ -242,10 +255,34 @@ private:
     size_t subtreeHeight(Node* here) const;
 
     /**
-    * \brief returns a copy of a node
+    * \brief deletes the root element
     *
     */
-    //Node* copyNode(const Node* node);
+    void deleteRoot();
+
+    /**
+    * \brief deletes a leaf
+    *
+    */
+    void deleteLeaf(Node* parent, const T& element);
+
+    /**
+    * \brief deletes a stick
+    *
+    */
+    void deleteStick(Node* parent, bool deleteLeft);
+
+    /**
+    * \brief deletes a node with two children
+    *
+    */
+    void deleteTwoChildNode(Node* deletee);
+
+    /**
+    * \brief deletes a tree with one element
+    *
+    */
+    bool deleteOneElementTree(const T& element);
 
     class Iterator
     {
