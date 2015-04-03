@@ -17,69 +17,98 @@
 #include <gtest/gtest.h>
 #include "otter.hpp"
 
-using std::string;
-
-TEST(randomTreeStringTest, insertTests)
+TEST(randomTreeIntTest, insertTests)
 {
-    RandomTree<string> stringTree;
-    string test = "hello world";
-    EXPECT_FALSE(stringTree.contains(test));
-    stringTree.insert(test);
-    EXPECT_TRUE(stringTree.contains(test));
-    EXPECT_TRUE(stringTree.size() == 1);
-    string test2 = "hello again";
-    stringTree.insert(test2);
-    EXPECT_TRUE(stringTree.contains(test2));
-    EXPECT_TRUE(stringTree.size() == 2);
+    RandomTree<int> intTree;
+    int test = 120;
+    EXPECT_FALSE(intTree.contains(test));
+    bool inserted = intTree.insert(test);
+    EXPECT_TRUE(intTree.contains(test));
+    EXPECT_TRUE(intTree.size() == 1);
+    EXPECT_TRUE(inserted);
+    int test2 = 220;
+    inserted = intTree.insert(test2);
+    EXPECT_TRUE(intTree.contains(test2));
+    EXPECT_TRUE(intTree.size() == 2);
+    EXPECT_TRUE(inserted);
+    // check that inserting again returns false
+    EXPECT_FALSE(intTree.insert(test));
     for (int i = 0; i < 100; ++i) {
-        string test = std::to_string(i);
-        EXPECT_FALSE(stringTree.contains(test));
-        stringTree.insert(test);
-        EXPECT_TRUE(stringTree.contains(test));
+        EXPECT_FALSE(intTree.contains(i));
+        inserted = intTree.insert(i);
+        EXPECT_TRUE(intTree.contains(i));
+        EXPECT_TRUE(inserted);
     }
     // checks that tree is somewhat branching and is not forming a stick
-    EXPECT_TRUE(stringTree.height() < 50);
-    stringTree.printStatistics(std::cout);
+    EXPECT_TRUE(intTree.height() < 30);
 }
 
-TEST(randomTreeStringTest, basicEqualityTests)
+TEST(randomTreeIntTest, basicEqualityTests)
 {
-    RandomTree<string> stringTree;
-    RandomTree<string> stringTree2;
-    //std::cout << "comparing empty string trees" << std::endl;
-    EXPECT_TRUE(stringTree == stringTree2);
-    string test = "hello world";
-    stringTree.insert(test);
-    //std::cout << "comparing one empty tree, one nonempty" << std::endl;
-    ASSERT_NE(stringTree, stringTree2);
-    stringTree2.insert(test);
-    ASSERT_EQ(stringTree, stringTree2);
-    string test2 = "hello again";
-    stringTree.insert(test2);
-    ASSERT_NE(stringTree,stringTree2);
-}
-
-TEST(randomTreeStringTest, copyConstructorTests)
-{
-    RandomTree<string> stringTree;
-    string test = "hello world";
-    stringTree.insert(test);
-    RandomTree<string> stringTree2{stringTree};
-    // tests copy constructor copying one element tree
-    ASSERT_EQ(stringTree, stringTree2);
-    string test2 = "hello again";
-    stringTree.insert(test2);
-    // make sure the copied tree is different after adding an element to it
-    ASSERT_NE(stringTree, stringTree2);
+    RandomTree<int> intTree;
+    RandomTree<int> intTree2;
+    // check that empty trees are equal
+    EXPECT_TRUE(intTree == intTree2);
+    int test = 120;
+    intTree.insert(test);
+    // check that different size trees are not equal
+    ASSERT_NE(intTree, intTree2);
+    intTree2.insert(test);
+    // check that equality works with one element trees
+    ASSERT_EQ(intTree, intTree2);
     for (int i = 0; i < 100; ++i) {
-        string test = std::to_string(i);
-        stringTree2.insert(test);
+        intTree.insert(i);
+        intTree2.insert(i);
     }
-    RandomTree<string> stringTree3{stringTree2};
+    // check that equality works for larger trees
+    ASSERT_EQ(intTree, intTree2);
+    intTree.insert(100);
+    // check that inequality works with larger trees
+    ASSERT_NE(intTree, intTree2);
+}
+
+TEST(randomTreeIntTest, copyConstructorTests)
+{
+    RandomTree<int> intTree;
+    int test = 120;
+    intTree.insert(test);
+    RandomTree<int> intTree2{intTree};
+    // tests copy constructor copying one element tree
+    ASSERT_EQ(intTree, intTree2);
+    int test2 = 220;
+    intTree.insert(test2);
+    // make sure the copied tree is different after adding an element to it
+    ASSERT_NE(intTree, intTree2);
+    for (int i = 0; i < 100; ++i) {
+        intTree2.insert(i);
+    }
+    RandomTree<int> intTree3{intTree2};
     // test copying a larger tree
     // also tests equality operator on larger trees
-    ASSERT_EQ(stringTree2, stringTree3);
-    ASSERT_NE(stringTree, stringTree3);
+    ASSERT_EQ(intTree2, intTree3);
+    ASSERT_NE(intTree, intTree3);
+}
+
+TEST(randomTreeIntTest, assignmentOperatorTests)
+{
+    RandomTree<int> intTree;
+    int test = 1234;
+    intTree.insert(test);
+    RandomTree<int> intTree2;
+    ASSERT_NE(intTree, intTree2);
+    intTree2 = intTree;
+    ASSERT_EQ(intTree, intTree2);
+    for (int i = 0; i < 1000; ++i) {
+        intTree2.insert(i);
+    }
+    
+    ASSERT_NE(intTree, intTree2);
+    RandomTree<int> intTree3;
+    ASSERT_NE(intTree2, intTree3);
+    intTree3 = intTree2;
+    ASSERT_EQ(intTree2, intTree3);
+    intTree3.insert(12345);
+    ASSERT_NE(intTree2, intTree3);
 }
 
 TEST(randomTreeIntTest, iteratorTests)
@@ -96,301 +125,187 @@ TEST(randomTreeIntTest, iteratorTests)
         ++num;
     }
 }
-/*
-TEST(randomTreeStringTest, copyConstructorTests)
-{
-    LinkedList<string> stringList;
-    string test = "hello world";
-    stringList.insertFront(test);
-    LinkedList<string> stringList2{stringList};
-    EXPECT_TRUE(stringList == stringList2);
-    string test2 = "hello again";
-    stringList.insertFront(test2);
-    EXPECT_TRUE(stringList != stringList2);
-    for (int i = 0; i < 1000; ++i) {
-        stringList2.insertFront(std::to_string(i));
-    }
-    LinkedList<string> stringList3{stringList2};
-    EXPECT_TRUE(stringList2 == stringList3);
-    stringList3.deleteFront();
-    EXPECT_TRUE(stringList2 != stringList3);
-}
 
-TEST(randomTreeStringTest, assignmentOperatorTests)
-{
-    LinkedList<string> stringList;
-    string test = "hello world";
-    stringList.insertFront(test);
-    LinkedList<string> stringList2;
-    ASSERT_NE(stringList, stringList2);
-    stringList2 = stringList;
-    ASSERT_EQ(stringList, stringList2);
-    for (int i = 0; i < 1000; ++i) {
-        stringList2.insertFront(std::to_string(i));
+TEST(randomTreeIntTest, deleteElementTests) {
+    RandomTree<int> intTree;
+    intTree.insert(5);
+    // just an assurance that the delete is actually changing the value of
+    // contains(5)
+    EXPECT_TRUE(intTree.contains(5));
+    intTree.deleteElement(5);
+    // check that the tree is now empty
+    ASSERT_EQ(intTree.size(), 0);
+    EXPECT_FALSE(intTree.contains(5));
+    for (int i = 0; i < 5; ++i) {
+        intTree.insert(i);
     }
-    ASSERT_NE(stringList, stringList2);
-    LinkedList<string> stringList3;
-    ASSERT_NE(stringList2, stringList3);
-    stringList3 = stringList2;
-    ASSERT_EQ(stringList2, stringList3);
-}
+    // 0 will be a leaf, so we are testing the case where we delete a leaf
+    bool deleted = intTree.deleteElement(0);
+    EXPECT_FALSE(intTree.contains(0));
+    ASSERT_EQ(intTree.size(), 4);
+    ASSERT_EQ(deleted, true);
+    // put 0 back in the tree
+    intTree.insert(0);
+    for (int i = 0; i < 5; ++i) {
+        // check that several deletes work
+        EXPECT_TRUE(intTree.contains(i));
+        bool deleted = intTree.deleteElement(i);
+        EXPECT_FALSE(intTree.contains(i));
+        EXPECT_TRUE(deleted);
+        ASSERT_EQ(intTree.size(), 4 - i);
+    }
 
-TEST(randomTreeStringTest, insertBackTests)
-{
-    LinkedList<string> stringList;
-    string test = "hello world";
-    EXPECT_FALSE(stringList.contains(test));
-    stringList.insertBack(test);
-    EXPECT_TRUE(stringList.contains(test));
-    EXPECT_TRUE(stringList.size() == 1);
-    string test2 = "hello again";
-    stringList.insertBack(test2);
-    EXPECT_TRUE(stringList.contains(test2));
-    EXPECT_TRUE(stringList.size() == 2);
-    for (int i = 0; i < 100; ++i) {
-        string test = std::to_string(i);
-        EXPECT_FALSE(stringList.contains(test));
-        stringList.insertBack(test);
-        EXPECT_TRUE(stringList.contains(test));
+
+    for (int i = 0; i < 200; ++i) {
+        intTree.insert(i);
+    }
+    for (int i = 199; i >=0; --i) {
+        // check that lots of deletes work
+        EXPECT_TRUE(intTree.contains(i)) << "list should contain " << i;
+        bool deleted = intTree.deleteElement(i);
+        EXPECT_FALSE(intTree.contains(i));
+        EXPECT_TRUE(deleted);
+        ASSERT_EQ(intTree.size(), i);
     }
 }
-
-TEST(randomTreeStringTest, insertAfterTests)
-{
-    srand (time(NULL));
-    LinkedList<string> stringList;
-    string test = "hello world";
-    stringList.insertFront(test);
-    EXPECT_TRUE(stringList.contains(test));
-    for (int i = 0; i < 1000; ++i) {
-        LinkedList<string>::iterator it = stringList.begin();
-        string s = std::to_string(i);
-        int advanceDist = rand() % stringList.size();
-        std::advance(it, advanceDist);
-        stringList.insertAfter(it, s);
-        EXPECT_TRUE(stringList.contains(s));
-    }
-}
-
-TEST(randomTreeStringTest, deleteBackTests)
-{
-  LinkedList<string> stringList;
-    for (int i = 0; i < 1000; ++i) {
-        stringList.insertFront(std::to_string(i));
-    }
-    for (int i = 0; i < 1000; ++i) {
-        string deletee = stringList.deleteBack();
-        ASSERT_EQ(deletee, std::to_string(i));
-        ASSERT_EQ(stringList.size(), 999 - i);
-    }
-}
-
-TEST(randomTreeStringTest, iteratorTests)
-{
-    LinkedList<string> stringList;
-    for (int i = 0; i < 1000; ++i) {
-        stringList.insertFront(std::to_string(i));
-    }
-
-    int j = 999;
-    for (LinkedList<string>::iterator i = stringList.begin(); i != stringList.end(); ++i) {
-        EXPECT_TRUE(*i == std::to_string(j));
-        --j;
-    }
-}
-
-TEST(randomTreeStringTest, deleteElementTests)
-{
-    srand (time(NULL));
-    LinkedList<string> stringList;
-    string test = "hello world";
-    stringList.insertFront(test);
-    EXPECT_TRUE(stringList.contains(test));
-    stringList.deleteElement(test);
-    EXPECT_FALSE(stringList.contains(test));
-    for (int i = 0; i < 1000; ++i) {
-        string test = std::to_string(i);
-        stringList.insertFront(test);
-        EXPECT_TRUE(stringList.contains(test));
-    }
-    ASSERT_EQ(stringList.size(), 1000) << "list should have 1000 elements";
-    for (int i = 0; i < 1000; ++i) {
-        string test = std::to_string(rand() % 1000);
-        stringList.deleteElement(test);
-        EXPECT_FALSE(stringList.contains(test)) << "list should no longer have element";
-    }
-    EXPECT_TRUE(stringList.size() < 1000) << "list should have deleted at least one element";
-}*/
 
 TEST(randomTreeOtterTest, insertTests)
 {
     RandomTree<Otter> otterTree;
-    Otter p = Otter{"phokey"};
-    EXPECT_FALSE(otterTree.contains(p));
-    otterTree.insert(p);
-    EXPECT_TRUE(otterTree.contains(p));
+    Otter phokey = Otter{"phokey"};
+    EXPECT_FALSE(otterTree.contains(phokey));
+    bool inserted = otterTree.insert(phokey);
+    EXPECT_TRUE(otterTree.contains(phokey));
     EXPECT_TRUE(otterTree.size() == 1);
-    Otter o2 = Otter{"another otter"};
-    otterTree.insert(o2);
-    EXPECT_TRUE(otterTree.contains(o2));
+    EXPECT_TRUE(inserted);
+    Otter test2 = Otter{"another otter"};
+    inserted = otterTree.insert(test2);
+    EXPECT_TRUE(otterTree.contains(test2));
     EXPECT_TRUE(otterTree.size() == 2);
+    EXPECT_TRUE(inserted);
+    // check that inserting again returns false
+    EXPECT_FALSE(otterTree.insert(phokey));
     for (int i = 0; i < 100; ++i) {
-        Otter test = Otter{std::to_string(i)};
-        EXPECT_FALSE(otterTree.contains(test));
-        otterTree.insert(test);
-        EXPECT_TRUE(otterTree.contains(test));
+        Otter o{std::to_string(i)};
+        EXPECT_FALSE(otterTree.contains(o));
+        inserted = otterTree.insert(o);
+        EXPECT_TRUE(otterTree.contains(o));
+        EXPECT_TRUE(inserted);
     }
     // checks that tree is somewhat branching and is not forming a stick
-    EXPECT_TRUE(otterTree.height() < 50);
-    otterTree.printStatistics(std::cout);
+    EXPECT_TRUE(otterTree.height() < 30);
 }
 
-/*
-
-TEST(randomTreeOtterTest, insertFrontTests)
+TEST(randomTreeOtterTest, basicEqualityTests)
 {
-    LinkedList<Otter> otterList;
+    RandomTree<Otter> otterTree;
+    RandomTree<Otter> otterTree2;
+    // check that empty trees are equal
+    EXPECT_TRUE(otterTree == otterTree2);
     Otter phokey = Otter{"phokey"};
-    EXPECT_FALSE(otterList.contains(phokey));
-    otterList.insertFront(phokey);
-    EXPECT_TRUE(otterList.contains(phokey));
-    EXPECT_TRUE(otterList.size() == 1);
-    Otter test2 = Otter{"river otter"};
-    otterList.insertFront(test2);
-    EXPECT_TRUE(otterList.contains(test2));
-    EXPECT_TRUE(otterList.size() == 2);
+    otterTree.insert(phokey);
+    // check that different size trees are not equal
+    ASSERT_NE(otterTree, otterTree2);
+    otterTree2.insert(phokey);
+    // check that equality works with one element trees
+    ASSERT_EQ(otterTree, otterTree2);
     for (int i = 0; i < 100; ++i) {
-        Otter test = Otter{std::to_string(i)};
-        EXPECT_FALSE(otterList.contains(test));
-        otterList.insertFront(test);
-        EXPECT_TRUE(otterList.contains(test));
+        Otter o = Otter{std::to_string(i)};
+        otterTree.insert(o);
+        otterTree2.insert(o);
     }
+    // check that equality works for larger trees
+    ASSERT_EQ(otterTree, otterTree2);
+    otterTree.insert(Otter{"another"});
+    // check that inequality works with larger trees
+    ASSERT_NE(otterTree, otterTree2);
 }
 
 TEST(randomTreeOtterTest, copyConstructorTests)
 {
-    LinkedList<Otter> otterList;
+    RandomTree<Otter> otterTree;
     Otter phokey = Otter{"phokey"};
-    otterList.insertFront(phokey);
-    LinkedList<Otter> otterList2{otterList};
-    EXPECT_TRUE(otterList == otterList2);
-    Otter test2 = Otter{"river otter"};
-    otterList.insertFront(test2);
-    EXPECT_TRUE(otterList != otterList2);
-    for (int i = 0; i < 1000; ++i) {
-        Otter test = Otter{std::to_string(i)};
-        otterList2.insertFront(test);
+    otterTree.insert(phokey);
+    RandomTree<Otter> otterTree2{otterTree};
+    // tests copy constructor copying one element tree
+    ASSERT_EQ(otterTree, otterTree2);
+    Otter test2 = Otter{"another"};
+    otterTree.insert(test2);
+    // make sure the copied tree is different after adding an element to it
+    ASSERT_NE(otterTree, otterTree2);
+    for (int i = 0; i < 100; ++i) {
+        Otter o{std::to_string(i)};
+        otterTree2.insert(o);
     }
-    LinkedList<Otter> otterList3{otterList2};
-    EXPECT_TRUE(otterList2 == otterList3);
-    otterList3.deleteFront();
-    EXPECT_TRUE(otterList2 != otterList3);
+    RandomTree<Otter> otterTree3{otterTree2};
+    // test copying a larger tree
+    // also tests equality operator on larger trees
+    ASSERT_EQ(otterTree2, otterTree3);
+    ASSERT_NE(otterTree, otterTree3);
 }
 
 TEST(randomTreeOtterTest, assignmentOperatorTests)
 {
-    LinkedList<Otter> otterList;
+    RandomTree<Otter> otterTree;
     Otter phokey = Otter{"phokey"};
-    otterList.insertFront(phokey);
-    LinkedList<Otter> otterList2;
-    ASSERT_NE(otterList, otterList2);
-    otterList2 = otterList;
-    ASSERT_EQ(otterList, otterList2);
+    otterTree.insert(phokey);
+    RandomTree<Otter> otterTree2;
+    ASSERT_NE(otterTree, otterTree2);
+    otterTree2 = otterTree;
+    ASSERT_EQ(otterTree, otterTree2);
     for (int i = 0; i < 1000; ++i) {
-        Otter test = Otter{std::to_string(i)};
-        otterList2.insertFront(test);
+        Otter o{std::to_string(i)};
+        otterTree2.insert(o);
     }
-    ASSERT_NE(otterList, otterList2);
-    LinkedList<Otter> otterList3;
-    ASSERT_NE(otterList2, otterList3);
-    otterList3 = otterList2;
-    ASSERT_EQ(otterList2, otterList3);
-}
-
-TEST(randomTreeOtterTest, insertBackTests)
-{
-    LinkedList<Otter> otterList;
-    Otter phokey = Otter{"phokey"};
-    EXPECT_FALSE(otterList.contains(phokey));
-    otterList.insertBack(phokey);
-    EXPECT_TRUE(otterList.contains(phokey));
-    EXPECT_TRUE(otterList.size() == 1);
-    Otter test2 = Otter{"river otter"};
-    otterList.insertBack(test2);
-    EXPECT_TRUE(otterList.contains(test2));
-    EXPECT_TRUE(otterList.size() == 2);
-    for (int i = 0; i < 100; ++i) {
-        Otter test = Otter{std::to_string(i)};
-        EXPECT_FALSE(otterList.contains(test));
-        otterList.insertBack(test);
-        EXPECT_TRUE(otterList.contains(test));
-    }
-}
-
-TEST(randomTreeOtterTest, insertAfterTests)
-{
-    srand (time(NULL));
-    LinkedList<Otter> otterList;
-    Otter phokey = Otter{"phokey"};
-    otterList.insertFront(phokey);
-    EXPECT_TRUE(otterList.contains(phokey));
-    for (int i = 0; i < 1000; ++i) {
-        LinkedList<Otter>::iterator it = otterList.begin();
-        Otter o = Otter{std::to_string(i)};
-        int advanceDist = rand() % otterList.size();
-        std::advance(it, advanceDist);
-        otterList.insertAfter(it, o);
-        EXPECT_TRUE(otterList.contains(o));
-    }
-}
-
-TEST(randomTreeOtterTest, deleteBackTests)
-{
-  LinkedList<Otter> otterList;
-    for (int i = 0; i < 1000; ++i) {
-        otterList.insertFront(Otter{std::to_string(i)});
-    }
-    for (int i = 0; i < 1000; ++i) {
-        Otter deletee = otterList.deleteBack();
-        ASSERT_EQ(deletee, Otter{std::to_string(i)});
-        ASSERT_EQ(otterList.size(), 999 - i);
-    }
+    
+    ASSERT_NE(otterTree, otterTree2);
+    RandomTree<Otter> otterTree3;
+    ASSERT_NE(otterTree2, otterTree3);
+    otterTree3 = otterTree2;
+    ASSERT_EQ(otterTree2, otterTree3);
+    otterTree3.insert(Otter{"another"});
+    ASSERT_NE(otterTree2, otterTree3);
 }
 
 TEST(randomTreeOtterTest, iteratorTests)
 {
-    LinkedList<Otter> otterList;
-    for (int i = 0; i < 1000; ++i) {
-        otterList.insertFront(Otter{std::to_string(i)});
+    // using ints for the iterator tests so we can check dereferences work
+    // with a simple for loop (string comparison gets weird, '19' < '2')
+    RandomTree<Otter> otterTree;
+    for (int i = 0; i < 100; ++i) {
+        otterTree.insert(Otter{std::to_string(i)});
     }
-
-    int j = 999;
-    for (LinkedList<Otter>::iterator i = otterList.begin(); i != otterList.end(); ++i) {
-        EXPECT_TRUE(*i == Otter{std::to_string(j)});
-        --j;
+    int num = 0;
+    for (RandomTree<Otter>::iterator i = otterTree.begin(); i != otterTree.end(); ++i) {
+        *i;
+        ++num;
     }
 }
 
-TEST(randomTreeOtterTest, deleteElementTests)
-{
-    srand (time(NULL));
-    LinkedList<Otter> otterList;
+TEST(randomTreeOtterTest, deleteElementTests) {
+    RandomTree<Otter> otterTree;
     Otter phokey = Otter{"phokey"};
-    otterList.insertFront(phokey);
-    EXPECT_TRUE(otterList.contains(phokey));
-    otterList.deleteElement(phokey);
-    EXPECT_FALSE(otterList.contains(phokey));
-    for (int i = 0; i < 1000; ++i) {
-        Otter test = Otter{std::to_string(i)};
-        otterList.insertFront(test);
-        EXPECT_TRUE(otterList.contains(test));
+    otterTree.insert(phokey);
+    // just an assurance that the delete is actually changing the value of
+    // contains(phokey)
+    EXPECT_TRUE(otterTree.contains(phokey));
+    otterTree.deleteElement(phokey);
+    // check that the tree is now empty
+    ASSERT_EQ(otterTree.size(), 0);
+    EXPECT_FALSE(otterTree.contains(phokey));
+
+
+    for (int i = 0; i < 200; ++i) {
+        Otter o{std::to_string(i)};
+        otterTree.insert(o);
     }
-    ASSERT_EQ(otterList.size(), 1000) << "list should have 1000 elements";
-    for (int i = 0; i < 1000; ++i) {
-        Otter test = Otter{std::to_string(rand() % 1000)};
-        otterList.deleteElement(test);
-        EXPECT_FALSE(otterList.contains(test)) << "list should no longer have element";
+    for (int i = 199; i >=0; --i) {
+        Otter o{std::to_string(i)};
+        // check that lots of deletes work
+        EXPECT_TRUE(otterTree.contains(o)) << "list should contain " << i;
+        bool deleted = otterTree.deleteElement(o);
+        EXPECT_FALSE(otterTree.contains(o));
+        EXPECT_TRUE(deleted);
+        ASSERT_EQ(otterTree.size(), i);
     }
-    EXPECT_TRUE(otterList.size() < 1000) << "list should have deleted at least one element";
 }
-*/
