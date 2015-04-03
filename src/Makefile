@@ -10,7 +10,7 @@
 CXXFLAGS = -g -Wall -Wextra -pedantic
 CXX = clang++ -std=c++11
 
-TARGETS = linkedlist-test randomtree-test
+TARGETS = linkedlist-test randomtree-test splaytree-test
 # good instructions for installing gtest on mac here
 # http://stackoverflow.com/questions/20746232/how-to-properly-setup-googletest
 # -on-os-x-aside-from-xcode
@@ -25,9 +25,10 @@ all: $(TARGETS)
 clean:
 	rm *.o $(TARGETS)
 
-test: linkedlist-test randomtree-test
+test: linkedlist-test randomtree-test splaytree-test
 	./linkedlist-test
 	./randomtree-test
+	./splaytree-test
 
 linkedlist-test: linkedlist-test.o otter.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
@@ -35,7 +36,11 @@ linkedlist-test: linkedlist-test.o otter.o
 randomtree-test: randomtree-test.o otter.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
 
+splaytree-test: splaytree-test.o otter.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
+
 # ----- Dependencies -----
 otter.o: otter.cpp otter.hpp
 linkedlist-test.o: linkedlist-test.cpp
 randomtree-test.o: randomtree-test.cpp
+splaytree-test.o: splaytree-test.cpp
