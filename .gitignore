@@ -1,3 +1,4 @@
 *.o
 linkedlist-test
 randomtree-test
+splaytree-test
