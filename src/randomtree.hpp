@@ -306,7 +306,6 @@ private:
         friend class RandomTree;
         Iterator(Node* index);
         Node* current_;
-        //std::stack<Node*> parents_;
     };
 
 };
