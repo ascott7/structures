@@ -158,11 +158,12 @@ private:
         T element_;    ///> the element at this node
         Node* left_;   ///> this node's left child
         Node* right_;  ///> this node's right child
+        Node* parent_; ///> this node's parent
         /**
         * \brief Node constructor
         *
         */
-        Node(const T& element, Node* left, Node* right);
+        Node(const T& element, Node* left, Node* right, Node* parent);
         /**
         * \brief default destructor
         *
@@ -264,13 +265,13 @@ private:
     * \brief deletes a leaf
     *
     */
-    void deleteLeaf(Node* parent, const T& element);
+    void deleteLeaf(Node* deletee);
 
     /**
     * \brief deletes a stick
     *
     */
-    void deleteStick(Node* parent, bool deleteLeft);
+    void deleteStick(Node* deletee, bool deleteLeft);
 
     /**
     * \brief deletes a node with two children
@@ -303,9 +304,9 @@ private:
 
     private:
         friend class RandomTree;
-        Iterator(Node* index, std::stack<Node*> parents);
+        Iterator(Node* index);
         Node* current_;
-        std::stack<Node*> parents_;
+        //std::stack<Node*> parents_;
     };
 
 };
