@@ -2,24 +2,24 @@
  * \file splaytree-private.hpp
  * \author Andrew Scott
  *
- * \brief implementation of templated random tree class
+ * \brief implementation of templated splay tree class
  */
 
 template<typename T>
-RandomTree<T>::RandomTree()
+SplayTree<T>::SplayTree()
             : size_{0}, root_{nullptr}
 {
-    srand (time(NULL));
+    // nothing else to do
 }
 
 template<typename T>
-RandomTree<T>::~RandomTree()
+SplayTree<T>::~SplayTree()
 {
     delete root_;
 }
 
 template<typename T>
-RandomTree<T>::RandomTree(const RandomTree<T>& orig)
+SplayTree<T>::SplayTree(const SplayTree<T>& orig)
             : size_{0}, root_{nullptr}
 {
     for (iterator i = orig.begin(); i != orig.end(); ++i) {
@@ -28,15 +28,15 @@ RandomTree<T>::RandomTree(const RandomTree<T>& orig)
 }
 
 template<typename T>
-RandomTree<T>& RandomTree<T>::operator=(const RandomTree<T>& rhs)
+SplayTree<T>& SplayTree<T>::operator=(const SplayTree<T>& rhs)
 {
-    RandomTree<T> copy{rhs};
+    SplayTree<T> copy{rhs};
     swap(copy);
     return *this;
 }
 
 template<typename T>
-void RandomTree<T>::swap(RandomTree<T>& rhs)
+void SplayTree<T>::swap(SplayTree<T>& rhs)
 {
     using std::swap;
     swap(root_, rhs.root_);
@@ -44,25 +44,25 @@ void RandomTree<T>::swap(RandomTree<T>& rhs)
 }
 
 template<typename T>
-void swap(RandomTree<T>& lhs, RandomTree<T>& rhs)
+void swap(SplayTree<T>& lhs, SplayTree<T>& rhs)
 {
     lhs.swap(rhs);
 }
 
 template<typename T>
-size_t RandomTree<T>::size() const
+size_t SplayTree<T>::size() const
 {
     return size_;
 }
 
 template<typename T>
-size_t RandomTree<T>::height() const
+size_t SplayTree<T>::height() const
 {
     return subtreeHeight(root_);
 }
 
 template<typename T>
-bool RandomTree<T>::insert(const T& element)
+bool SplayTree<T>::insert(const T& element)
 {
     if (insertNode(root_, element)) {
         ++size_;
@@ -72,23 +72,22 @@ bool RandomTree<T>::insert(const T& element)
 }
 
 template<typename T>
-void RandomTree<T>::deleteRoot()
+void SplayTree<T>::deleteRoot()
 {
     Node* newRoot = root_->right_;
-    Node* newRootParent = root_;
     // if the right side of the tree is empty, then we have to find the
     // next largest element in the tree after the current root
     if (newRoot == nullptr) {
         newRoot = root_->left_;
         while (newRoot->right_ != nullptr) {
-            newRootParent = newRoot;
+            //newRootParent = newRoot;
             newRoot = newRoot->right_;
         }
     }
     else {
         // otherwise find the root's inorder successor
         while (newRoot->left_ != nullptr) {
-            newRootParent = newRoot;
+            //newRootParent = newRoot;
             newRoot = newRoot->left_;
         }
     }
@@ -96,12 +95,12 @@ void RandomTree<T>::deleteRoot()
 
     if (newRoot->left_ == nullptr && newRoot->right_ == nullptr) {
         //std::cout << "calling delete leaf with " << newRootParent->element_ << " " << root_->element_ << std::endl;
-        deleteLeaf(newRootParent, root_->element_);
+        deleteLeaf(newRoot);
     }
 
     else if (newRoot->left_ == nullptr ^ newRoot->right_ == nullptr) {
         //std::cout << "calling delete root stick with " << newRootParent->element_ << " " << newRoot->element_ << std::endl;
-        deleteStick(newRootParent, newRootParent->left_ == newRoot);
+        deleteStick(newRoot, newRoot->parent_->left_ == newRoot);
     }
 
     else {
@@ -111,10 +110,9 @@ void RandomTree<T>::deleteRoot()
 }
 
 template<typename T>
-bool RandomTree<T>::deleteOneElementTree(const T& element)
+bool SplayTree<T>::deleteOneElementTree(const T& element)
 {
     if (root_->element_ == element) {
-        //std::cout << "deleting from tree of size 1" << std::endl;
         delete root_;
         root_ = nullptr;
         --size_;
@@ -125,9 +123,10 @@ bool RandomTree<T>::deleteOneElementTree(const T& element)
 }
 
 template<typename T>
-void RandomTree<T>::deleteLeaf(Node* parent, const T& element)
+void SplayTree<T>::deleteLeaf(Node* deletee)
 {
-    if (element < parent->element_) {
+    Node* parent = deletee->parent_;
+    if (deletee->element_ < parent->element_) {
         delete parent->left_;
         parent->left_ = nullptr;
     } else {
@@ -138,16 +137,9 @@ void RandomTree<T>::deleteLeaf(Node* parent, const T& element)
 }
 
 template<typename T>
-void RandomTree<T>::deleteStick(Node* parent, bool deleteLeft)
+void SplayTree<T>::deleteStick(Node* deletee, bool deleteLeft)
 {
     Node* newChild;
-    Node* deletee;
-
-    if (deleteLeft) {
-        deletee = parent->left_;
-    } else {
-        deletee = parent->right_;
-    }
 
     // find the element to delete's child
     if (deletee->left_ == nullptr) {
@@ -159,12 +151,13 @@ void RandomTree<T>::deleteStick(Node* parent, bool deleteLeft)
     // if the node to delete was the left child of the parent, make the
     // node's child its parent's left node
     if (deleteLeft) {
-        parent->left_ = newChild;
+        deletee->parent_->left_ = newChild;
     }
     // otherwise make it its parent's right node
     else {
-        parent->right_ = newChild;
+        deletee->parent_->right_ = newChild;
     }
+    newChild->parent_ = deletee->parent_;
     // set the deletee's children to nullptr so we don't delete any more nodes
     // when deleting the deletee
     deletee->left_ = nullptr;
@@ -174,32 +167,31 @@ void RandomTree<T>::deleteStick(Node* parent, bool deleteLeft)
 }
 
 template<typename T>
-void RandomTree<T>::deleteTwoChildNode(Node* deletee)
+void SplayTree<T>::deleteTwoChildNode(Node* deletee)
 {
     // replace the node to delete with the new min
     // then delete that min
     Node* newNode = deletee->right_;
-    Node* newNodeParent = deletee;
     // find the deletee's inorder successor
     while (newNode->left_ != nullptr) {
-        newNodeParent = newNode;
+        //newNodeParent = newNode;
         newNode = newNode->left_;
     }
     deletee->element_ = newNode->element_;
     // if the new child to delete is a leaf, delete it as a leaf
     if (newNode->left_ == nullptr && newNode->right_ == nullptr){
         //std::cout << "calling delete leaf with " << newNodeParent->element_ << " " << deletee->element_ << std::endl;
-        deleteLeaf(newNodeParent, deletee->element_);
+        deleteLeaf(newNode);
     }
     // otherwise it must be a stick, so delete it as a stick
     else {
         //std::cout << "calling delete stick with " << newNodeParent->element_ << " " << newNode->element_ << " " << newNode->element_ << std::endl;
-        deleteStick(newNodeParent, newNodeParent->left_ == newNode);
+        deleteStick(newNode, newNode->parent_->left_ == newNode);
     }
 }
 
 template<typename T>
-bool RandomTree<T>::deleteElement(const T& element)
+bool SplayTree<T>::deleteElement(const T& element)
 {
     if (empty()) {
         return false;
@@ -208,63 +200,42 @@ bool RandomTree<T>::deleteElement(const T& element)
         return deleteOneElementTree(element);
     }
 
-    Node* parent = root_;
-    Node* deletee = nullptr;
-
     if (root_->element_ == element) {
         //std::cout << "deleting root" << std::endl;
         deleteRoot();
         return true;
     }
+
+    Node* deletee = root_;
     // find the element to delete
-    while (parent != nullptr) {
+    while (deletee != nullptr && deletee->element_ != element) {
         // if we need to go left to find our element but we can't go left
         // then the element doesn't exist
-        if (parent->left_ == nullptr && element < parent->element_) {
-            return false;
-        }
-        // same thing going to the right
-        if (parent->right_ == nullptr && element > parent->element_) {
-            return false;
-        }
-        if (element < parent->element_) {
-            // if we have found the element, exit the loop
-            if (parent->left_->element_ == element) {
-                deletee = parent->left_;
-                break;
+        if (element < deletee->element_) {
+            if (deletee->left_ == nullptr) {
+                return false;
+            } else {
+                deletee = deletee->left_;
             }
-            // otherwise keep going
-            else {
-                parent = parent->left_;
+        } else if (element > deletee->element_) {
+            if (deletee->right_ == nullptr) {
+                return false;
+            } else {
+                deletee = deletee->right_;
             }
         }
-        else if (element > parent->element_) {
-            // we have found the element, exit the loop
-            if (parent->right_->element_ == element) {
-                deletee = parent->right_;
-                break;
-            }
-            // keep going
-            else {
-                parent = parent->right_;
-            }
-        }
-    }
-    // we exited the loop without finding the element
-    if (parent == nullptr || deletee == nullptr) {
-        return false;
     }
     // otherwise we now have to delete the element
     // if the element to delete is a leaf, just remove the leaf
-    else if (deletee->left_ == nullptr && deletee->right_ == nullptr) {
+    if (deletee->left_ == nullptr && deletee->right_ == nullptr) {
         //std::cout << "deleting a leaf" << std::endl;
-        deleteLeaf(parent, element);
+        deleteLeaf(deletee);
         return true;
     }
     // if the node to delete has one child, replace the node with its child
     else if (deletee->left_ == nullptr ^ deletee->right_ == nullptr) {
         //std::cout << "deleting in a stick" << std::endl;
-        deleteStick(parent, parent->left_ == deletee);
+        deleteStick(deletee, deletee == deletee->parent_->left_);
         return true;
     }
     // if we get to this point, we know that our node to delete has two
@@ -279,7 +250,46 @@ bool RandomTree<T>::deleteElement(const T& element)
 }
 
 template<typename T>
-bool RandomTree<T>::contains(const T& element) const
+void SplayTree<T>::splayToRoot(Node* newRoot)
+{
+    // base case (we are at the root)
+    if (newRoot->parent_ == nullptr) {
+        return;
+    }
+    // if we are a child of the root, rotate to become the root
+    else if (newRoot->parent_ == root_) {
+        if (root_->left_ == newRoot) {
+            rightRotate(root_);
+        } else {
+            leftRotate(root_);
+        }
+    }
+    // if we have a zig zag case where we go one direction then the other
+    else if (newRoot->parent_->left_ == newRoot ^ newRoot->parent_->parent_->left_ == newRoot->parent_) {
+        if (newRoot->parent_->left_ == newRoot) {
+            rightRotate(newRoot->parent_);
+            leftRotate(newRoot->parent_);
+        } else {
+            leftRotate(newRoot->parent_);
+            rightRotate(newRoot->parent_);
+        }
+        splayToRoot(newRoot);
+    } 
+    // if we have a zig zag case where we go the same direction twice
+    else {
+        if (newRoot->parent_->parent_->left_ == newRoot->parent_) {
+            rightRotate(newRoot->parent_->parent_);
+            rightRotate(newRoot->parent_);
+        } else {
+            leftRotate(newRoot->parent_->parent_);
+            leftRotate(newRoot->parent_);
+        }
+        splayToRoot(newRoot);
+    }
+}
+
+template<typename T>
+bool SplayTree<T>::contains(const T& element) const
 {
     if (size_ == 0) {
         return false;
@@ -288,7 +298,7 @@ bool RandomTree<T>::contains(const T& element) const
 }
 
 template<typename T>
-bool RandomTree<T>::existsNode(Node* here, const T& element) const
+bool SplayTree<T>::existsNode(Node* here, const T& element) const
 {
     if (here == nullptr) {
         return false;
@@ -309,13 +319,13 @@ bool RandomTree<T>::existsNode(Node* here, const T& element) const
 }
 
 template<typename T>
-bool RandomTree<T>::empty()
+bool SplayTree<T>::empty()
 {
     return (size_ == 0);
 }
 
 template<typename T>
-bool RandomTree<T>::operator==(const RandomTree<T>& rhs) const
+bool SplayTree<T>::operator==(const SplayTree<T>& rhs) const
 {
     // if the sizes are different the trees are not equal
     if (size() != rhs.size()) {
@@ -337,46 +347,98 @@ bool RandomTree<T>::operator==(const RandomTree<T>& rhs) const
 
 
 template<typename T>
-bool RandomTree<T>::operator!=(const RandomTree<T>& rhs) const
+bool SplayTree<T>::operator!=(const SplayTree<T>& rhs) const
 {
     return !(*this == rhs);
 }
 
+//      d            b
+//     / \          / \
+//    b   E  ->    A   d
+//   / \              / \
+//  A   C            C   E
 template <typename T> 
-void RandomTree<T>::rightRotate(Node*& top) 
+void SplayTree<T>::rightRotate(Node* top)
 {
-    Node* b = top->left_;       // b is d's left child 
-    top->left_= b->right_;      // C becomes left child of d 
-    b->right_= top;             // d becomes right child of b  
-    top = b;                    // top is now b 
-}    
+    Node* newRoot = top->left_;          // b is d's left child
+    // if C exists, we need to change it's parent to be d
+    if (newRoot->right_ != nullptr) {
+        newRoot->right_->parent_ = top;
+    }
+    top->left_= newRoot->right_;      // C becomes left child of d
+    Node* topParent = top->parent_;   // save d's parent value
+    top->parent_ = newRoot;           // b is d's parent
+    newRoot->right_= top;             // d becomes right child of b
+    newRoot->parent_ = topParent;     // d's old parent is b's parent
+    // we then need to update the node pointing to our new top
+    if (newRoot->parent_ == nullptr) { 
+        root_ = newRoot;
+    } else {
+        if (newRoot->element_ < newRoot->parent_->element_) {
+            newRoot->parent_->left_ = newRoot;
+        } else {
+            newRoot->parent_->right_ = newRoot;
+        }
+    }
+    top = newRoot;                    // top is now b
+}
 
+//      b               d
+//     / \             / \
+//    A   d     ->    b   E
+//       / \         / \
+//      C   E       A   C
 template <typename T> 
-void RandomTree<T>::leftRotate(Node*& top) 
+void SplayTree<T>::leftRotate(Node* top) 
 {
-    Node* d = top->right_;      // d is b's right child 
-    top->right_= d->left_;      // C becomes right child of b 
-    d->left_= top;              // b becomes left child of d  
-    top = d;                    // top is now d 
+    Node* newRoot = top->right_;      // d is b's right child
+    // if C exists, we need to change it's parent to be b
+    if (newRoot->left_ != nullptr) {
+        newRoot->left_->parent_ = top;
+    }
+    top->right_= newRoot->left_;      // C becomes right child of b
+    Node* topParent = top->parent_;   // save b's parent value
+    top->parent_ = newRoot;           // d is b's parent
+    newRoot->left_= top;              // b becomes left child of d
+    newRoot->parent_ = topParent;     // b's old parent is d's parent
+    // we then need to update the node pointing to our new top
+    if (newRoot->parent_ == nullptr) { 
+        root_ = newRoot;
+    } else {
+        if (newRoot->element_ < newRoot->parent_->element_) {
+            newRoot->parent_->left_ = newRoot;
+        } else {
+            newRoot->parent_->right_ = newRoot;
+        }
+    }
+    top = newRoot;                    // top is now d 
 }
 
 template<typename T>
-bool RandomTree<T>::insertNode(Node*& here, const T& element)
+bool SplayTree<T>::insertNode(Node*& here, const T& element)
 {
-    // if we are at a leaf, make a new node
+    // if we have an empty tree, make a new node
     if (here == nullptr) {
-        here = new Node(element, nullptr, nullptr);
+        here = new Node(element, nullptr, nullptr, nullptr);
         return true;
-    } 
-    // random check to insert at root (insert at current node)
-    else if (rand() % here->size() == 0) {
-        return insertNodeAtRoot(here, element);
-    } 
+    }
     // otherwise go down to the next level in the tree
     else if (element < here->element_) {
-        return insertNode(here->left_, element);
+        if (here->left_ == nullptr) {
+            here->left_ = new Node(element, nullptr, nullptr, here);
+            splayToRoot(here->left_);
+            return true;
+        } else {
+            return insertNode(here->left_, element);
+        }
     } else if (element > here->element_) {
-        return insertNode(here->right_, element);
+        if (here->right_ == nullptr) {
+            here->right_ = new Node(element, nullptr, nullptr, here);
+            splayToRoot(here->right_);
+            return true;
+        } else {
+            return insertNode(here->right_, element);
+        }
     } 
     // if we aren't less than or greater than the element, we must be equal
     // and thus we can't insert
@@ -386,34 +448,7 @@ bool RandomTree<T>::insertNode(Node*& here, const T& element)
 }
 
 template<typename T>
-bool RandomTree<T>::insertNodeAtRoot(Node*& here, const T& element)
-{
-    // if we are at a leaf, make a new node
-    if (here == nullptr) {
-        here = new Node(element, nullptr, nullptr);
-        return true;
-    } else if (element < here->element_) {
-        if (insertNodeAtRoot(here->left_, element)) {
-            rightRotate(here);
-            return true;
-        }
-        return false;
-    } else if (element > here->element_) {
-        if (insertNodeAtRoot(here->right_, element)) {
-            leftRotate(here); 
-            return true;
-        }
-        return false;
-    } 
-    // if we aren't less than or greater than the element, we must be equal
-    // and thus we can't insert
-    else {
-        return false;
-    }
-}
-
-template<typename T>
-size_t RandomTree<T>::subtreeHeight(Node* here) const
+size_t SplayTree<T>::subtreeHeight(Node* here) const
 {
     // recursive base case
     if (here == nullptr) {
@@ -428,40 +463,40 @@ size_t RandomTree<T>::subtreeHeight(Node* here) const
 }
 
 template<typename T>
-std::ostream& RandomTree<T>::printStatistics(std::ostream& out) const
+std::ostream& SplayTree<T>::printStatistics(std::ostream& out) const
 {
     out << "height " << height() << std::endl;
     return out;
 }
 
 template <typename T>
-std::ostream& RandomTree<T>::print(std::ostream& out) const
+std::ostream& SplayTree<T>::print(std::ostream& out) const
 {
     printPretty(root_, 1, 1, out);
     return out;
 }
 
 template<typename T>
-typename RandomTree<T>::iterator RandomTree<T>::begin() const
+typename SplayTree<T>::iterator SplayTree<T>::begin() const
 {
     Node* current = root_;
     std::stack<Node*> parents;
     // if tree is empty, we don't want to dereference current
     if (current == nullptr) {
-        return Iterator(current, parents);
+        return Iterator(current);
     }
     while (current->left_ != nullptr) {
         parents.push(current);
         current = current->left_;
     }
-    return Iterator(current, parents);
+    return Iterator(current);
 }
 
 template<typename T>
-typename RandomTree<T>::iterator RandomTree<T>::end() const
+typename SplayTree<T>::iterator SplayTree<T>::end() const
 {
     std::stack<Node*> parents;
-    return Iterator(nullptr, parents);
+    return Iterator(nullptr);
 }
 
 // --------------------------------------
@@ -469,7 +504,7 @@ typename RandomTree<T>::iterator RandomTree<T>::end() const
 // --------------------------------------
 template<typename T>
 // Print the arm branches (eg, /    \ ) on a line
-void RandomTree<T>::printBranches(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
+void SplayTree<T>::printBranches(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
   for (int i = 0; i < nodesInThisLevel / 2; i++) {  
     out << ((i == 0) ? std::setw(startLen-1) : std::setw(nodeSpaceLen-2)) << "" << ((*iter++) ? "/" : " ");
@@ -480,10 +515,20 @@ void RandomTree<T>::printBranches(int branchLen, int nodeSpaceLen, int startLen,
 
 template<typename T>
 // Print the branches and node (eg, ___10___ )
-void RandomTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
+void SplayTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
   for (int i = 0; i < nodesInThisLevel; i++, iter++) {
     out << ((i == 0) ? std::setw(startLen) : std::setw(nodeSpaceLen)) << "" << ((*iter && (*iter)->left_) ? std::setfill('_') : std::setfill(' '));
+    /*std::string parent;
+    if (*iter != nullptr) {
+        if ((*iter)->parent_ != nullptr) {
+            parent = std::to_string((*iter)->parent_->element_);
+        } else {
+            parent = "-";
+        }
+    } else {
+        parent = "-";
+    }*/
     out << std::setw(branchLen+2) << ((*iter) ? std::to_string((*iter)->element_) : "");
     out << ((*iter && (*iter)->right_) ? std::setfill('_') : std::setfill(' ')) << std::setw(branchLen) << "" << std::setfill(' ');
   }
@@ -492,7 +537,7 @@ void RandomTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, in
 
 template<typename T>
 // Print the leaves only (just for the bottom row)
-void RandomTree<T>::printLeaves(int indentSpace, int level, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
+void SplayTree<T>::printLeaves(int indentSpace, int level, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
   for (int i = 0; i < nodesInThisLevel; i++, iter++) {
     out << ((i == 0) ? std::setw(indentSpace+2) : std::setw(2*level+2)) << ((*iter) ? std::to_string((*iter)->element_) : "");
@@ -505,7 +550,7 @@ template<typename T>
 // @ param
 // level  Control how wide you want the tree to sparse (eg, level 1 has the minimum space between nodes, while level 2 has a larger space between nodes)
 // indentSpace  Change this to add some indent space to the left (eg, indentSpace of 0 means the lowest level of the left node will stick to the left margin)
-void RandomTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostream& out) const {
+void SplayTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostream& out) const {
   int h = subtreeHeight(root_); //maxHeight(root);
   int nodesInThisLevel = 1;
 
@@ -540,24 +585,24 @@ void RandomTree<T>::printPretty(Node* root, int level, int indentSpace, std::ost
 }
 
 // --------------------------------------
-// Implementation of RandomTree::Node
+// Implementation of SplayTree::Node
 // --------------------------------------
 template<typename T>
-RandomTree<T>::Node::Node(const T& element, Node* left, Node* right)
-    :element_{element}, left_{left}, right_{right}
+SplayTree<T>::Node::Node(const T& element, Node* left, Node* right, Node* parent)
+    :element_{element}, left_{left}, right_{right}, parent_{parent}
 {
     // nothing else to do
 }
 
 template<typename T>
-RandomTree<T>::Node::~Node()
+SplayTree<T>::Node::~Node()
 {
     delete left_;
     delete right_;
 }
 
 template<typename T>
-size_t RandomTree<T>::Node::size() const
+size_t SplayTree<T>::Node::size() const
 {
     size_t size = 1;
 
@@ -571,7 +616,7 @@ size_t RandomTree<T>::Node::size() const
 }
 
 template<typename T>
-std::ostream& RandomTree<T>::Node::print(std::ostream& out) const
+std::ostream& SplayTree<T>::Node::print(std::ostream& out) const
 {
         out << "(";
     if (left_ == nullptr) {
@@ -592,17 +637,17 @@ std::ostream& RandomTree<T>::Node::print(std::ostream& out) const
 }
 
 // --------------------------------------
-// Implementation of RandomTree::Iterator
+// Implementation of SplayTree::Iterator
 // --------------------------------------
 template<typename T>
-RandomTree<T>::Iterator::Iterator(Node* index, std::stack<Node*> parents)
-    : current_{index}, parents_{parents}
+SplayTree<T>::Iterator::Iterator(Node* index)
+    : current_{index}
 {
     // Nothing else to do.
 }
 
 template<typename T>
-typename RandomTree<T>::Iterator& RandomTree<T>::Iterator::operator++()
+typename SplayTree<T>::Iterator& SplayTree<T>::Iterator::operator++()
 {
     bool lastElement = false;
     // empty tree
@@ -610,7 +655,7 @@ typename RandomTree<T>::Iterator& RandomTree<T>::Iterator::operator++()
         return *this;
     }
     // tree of size 1
-    if (current_->left_ == nullptr && current_->right_ == nullptr && parents_.size() == 0) {
+    if (current_->left_ == nullptr && current_->right_ == nullptr && current_->parent_ == nullptr) {
         current_ = nullptr;
         return *this;
     }
@@ -625,46 +670,41 @@ typename RandomTree<T>::Iterator& RandomTree<T>::Iterator::operator++()
     //           11
     if (current_->right_ != nullptr) {
         // one step to the right
-        parents_.push(current_);
         current_ = current_->right_;
         // go as far to the left as we can
         while (current_->left_ != nullptr) {
-            parents_.push(current_);
             current_ = current_->left_;
         }
     } 
     // nothing to the right and at the root node, which means we are at the
     // last element in the tree
-    else if (current_->right_ == nullptr && parents_.size() == 0) {
+    else if (current_->right_ == nullptr && current_->parent_ == nullptr) {
         current_ = nullptr;
         return *this;
     }
     // at this point we must go back up the tree to get to the next largest 
     // value
     // if stepping back up to the parent gives us a larger value, then we stop
-    else if (parents_.top()->element_ > current_->element_) {
-        current_ = parents_.top();
-        parents_.pop();
+    else if (current_->parent_->element_ > current_->element_) {
+        current_ = current_->parent_;
     } 
     // if stepping back up to the parent gives us a smaller value, then we keep
     // going up until we hit a larger value
-    else if (parents_.top()->element_ < current_->element_) {
-        while (parents_.top()->element_ < current_->element_) {
+    else if (current_->parent_->element_ < current_->element_) {
+        while (current_->parent_->element_ < current_->element_) {
             // step up to the parent of the current node
-            current_ = parents_.top();
-            parents_.pop();
+            current_ = current_->parent_;
             // if we have stepped all the way up to the root node and it is
             // less than the current node, we must have been coming from the
             // largest element, and thus we are at the end
-            if (parents_.size() == 0) {
+            if (current_->parent_ == nullptr) {
                 lastElement = true;
                 break;
             }
         }
         // one more pop to get to the element that is greater than the current one
         if (!lastElement) {
-            current_ = parents_.top();
-            parents_.pop();
+            current_ = current_->parent_;
         } 
         // if we were at the last element, return the equivalent of the end()
         else {
@@ -675,19 +715,19 @@ typename RandomTree<T>::Iterator& RandomTree<T>::Iterator::operator++()
 }
 
 template<typename T>
-T& RandomTree<T>::Iterator::operator*() const
+T& SplayTree<T>::Iterator::operator*() const
 {
     return current_->element_;
 }
 
 template<typename T>
-bool RandomTree<T>::Iterator::operator==(const Iterator& rhs) const
+bool SplayTree<T>::Iterator::operator==(const Iterator& rhs) const
 {
     return (current_ == rhs.current_);
 }
 
 template<typename T>
-bool RandomTree<T>::Iterator::operator!=(const Iterator& rhs) const
+bool SplayTree<T>::Iterator::operator!=(const Iterator& rhs) const
 {
     return !(*this == rhs);
 }
