@@ -75,7 +75,6 @@ template<typename T>
 void RandomTree<T>::deleteRoot()
 {
     Node* newRoot = root_->right_;
-    //Node* newRootParent = root_;
     // if the right side of the tree is empty, then we have to find the
     // next largest element in the tree after the current root
     if (newRoot == nullptr) {
@@ -141,7 +140,6 @@ template<typename T>
 void RandomTree<T>::deleteStick(Node* deletee, bool deleteLeft)
 {
     Node* newChild;
-    //Node* parent;
 
     // find the element to delete's child
     if (deletee->left_ == nullptr) {
@@ -174,7 +172,6 @@ void RandomTree<T>::deleteTwoChildNode(Node* deletee)
     // replace the node to delete with the new min
     // then delete that min
     Node* newNode = deletee->right_;
-    //Node* newNodeParent = deletee;
     // find the deletee's inorder successor
     while (newNode->left_ != nullptr) {
         //newNodeParent = newNode;
@@ -209,10 +206,7 @@ bool RandomTree<T>::deleteElement(const T& element)
         return true;
     }
 
-    //Node* parent = root_;
     Node* deletee = root_;
-
-    
     // find the element to delete
     while (deletee != nullptr && deletee->element_ != element) {
         // if we need to go left to find our element but we can't go left
