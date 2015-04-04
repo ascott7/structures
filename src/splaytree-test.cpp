@@ -1,16 +1,16 @@
 /**
- * \file randomtree-test.cpp
+ * \file splaytree-test.cpp
  * \author Andrew Scott
  *
- * \brief Tests a RandomTree for correctness using multiple types
+ * \brief Tests a SplayTree for correctness using multiple types
  *
  * \details
- *   Configured to use the templated RandomTree found in randomtree.hpp as
- *   random trees of different types
+ *   Configured to use the templated SplayTree found in splaytree.hpp as
+ *   splay trees of different types
  *
  */
 
-#include "randomtree.hpp"
+#include "splaytree.hpp"
 #include <iostream>
 #include <stdlib.h>      // rand(), srand()
 #include <time.h>       // time
@@ -19,34 +19,50 @@
 
 TEST(splayTreeIntTest, insertTests)
 {
-    RandomTree<int> intTree;
-    int test = 120;
+    SplayTree<int> intTree;
+    int test = 220;
     EXPECT_FALSE(intTree.contains(test));
     bool inserted = intTree.insert(test);
     EXPECT_TRUE(intTree.contains(test));
     EXPECT_TRUE(intTree.size() == 1);
     EXPECT_TRUE(inserted);
-    int test2 = 220;
+    int test2 = 120;
     inserted = intTree.insert(test2);
     EXPECT_TRUE(intTree.contains(test2));
     EXPECT_TRUE(intTree.size() == 2);
     EXPECT_TRUE(inserted);
     // check that inserting again returns false
     EXPECT_FALSE(intTree.insert(test));
-    for (int i = 0; i < 100; ++i) {
-        EXPECT_FALSE(intTree.contains(i));
-        inserted = intTree.insert(i);
-        EXPECT_TRUE(intTree.contains(i));
+    intTree.print(std::cout);
+    intTree.insert(100);
+    intTree.insert(99);
+    intTree.insert(98);
+    intTree.insert(97);
+    intTree.print(std::cout);
+    std::cout << "inserting 230" << std::endl;
+    intTree.insert(230);
+    intTree.print(std::cout);
+    /*for (int i = 0; i < 10; ++i) {
+        int intToInsert = 0;
+        if (i % 2 == 0) {
+            intToInsert = i;
+        } else {
+            intToInsert = 100 - i;
+        }
+        EXPECT_FALSE(intTree.contains(intToInsert));
+        inserted = intTree.insert(intToInsert);
+        intTree.print(std::cout);
+        EXPECT_TRUE(intTree.contains(intToInsert));
         EXPECT_TRUE(inserted);
-    }
+    }*/
     // checks that tree is somewhat branching and is not forming a stick
-    EXPECT_TRUE(intTree.height() < 30);
+    //EXPECT_TRUE(intTree.height() < 30);
 }
-
+/*
 TEST(splayTreeIntTest, basicEqualityTests)
 {
-    RandomTree<int> intTree;
-    RandomTree<int> intTree2;
+    SplayTree<int> intTree;
+    SplayTree<int> intTree2;
     // check that empty trees are equal
     EXPECT_TRUE(intTree == intTree2);
     int test = 120;
@@ -69,10 +85,10 @@ TEST(splayTreeIntTest, basicEqualityTests)
 
 TEST(splayTreeIntTest, copyConstructorTests)
 {
-    RandomTree<int> intTree;
+    SplayTree<int> intTree;
     int test = 120;
     intTree.insert(test);
-    RandomTree<int> intTree2{intTree};
+    SplayTree<int> intTree2{intTree};
     // tests copy constructor copying one element tree
     ASSERT_EQ(intTree, intTree2);
     int test2 = 220;
@@ -82,7 +98,7 @@ TEST(splayTreeIntTest, copyConstructorTests)
     for (int i = 0; i < 100; ++i) {
         intTree2.insert(i);
     }
-    RandomTree<int> intTree3{intTree2};
+    SplayTree<int> intTree3{intTree2};
     // test copying a larger tree
     // also tests equality operator on larger trees
     ASSERT_EQ(intTree2, intTree3);
@@ -91,10 +107,10 @@ TEST(splayTreeIntTest, copyConstructorTests)
 
 TEST(splayTreeIntTest, assignmentOperatorTests)
 {
-    RandomTree<int> intTree;
+    SplayTree<int> intTree;
     int test = 1234;
     intTree.insert(test);
-    RandomTree<int> intTree2;
+    SplayTree<int> intTree2;
     ASSERT_NE(intTree, intTree2);
     intTree2 = intTree;
     ASSERT_EQ(intTree, intTree2);
@@ -103,7 +119,7 @@ TEST(splayTreeIntTest, assignmentOperatorTests)
     }
     
     ASSERT_NE(intTree, intTree2);
-    RandomTree<int> intTree3;
+    SplayTree<int> intTree3;
     ASSERT_NE(intTree2, intTree3);
     intTree3 = intTree2;
     ASSERT_EQ(intTree2, intTree3);
@@ -115,19 +131,19 @@ TEST(splayTreeIntTest, iteratorTests)
 {
     // using ints for the iterator tests so we can check dereferences work
     // with a simple for loop (string comparison gets weird, '19' < '2')
-    RandomTree<int> intTree;
+    SplayTree<int> intTree;
     for (int i = 0; i < 100; ++i) {
         intTree.insert(i);
     }
     int num = 0;
-    for (RandomTree<int>::iterator i = intTree.begin(); i != intTree.end(); ++i) {
+    for (SplayTree<int>::iterator i = intTree.begin(); i != intTree.end(); ++i) {
         ASSERT_EQ(num, *i);
         ++num;
     }
 }
 
 TEST(splayTreeIntTest, deleteElementTests) {
-    RandomTree<int> intTree;
+    SplayTree<int> intTree;
     intTree.insert(5);
     // just an assurance that the delete is actually changing the value of
     // contains(5)
@@ -171,7 +187,7 @@ TEST(splayTreeIntTest, deleteElementTests) {
 
 TEST(splayTreeOtterTest, insertTests)
 {
-    RandomTree<Otter> otterTree;
+    SplayTree<Otter> otterTree;
     Otter phokey = Otter{"phokey"};
     EXPECT_FALSE(otterTree.contains(phokey));
     bool inserted = otterTree.insert(phokey);
@@ -198,8 +214,8 @@ TEST(splayTreeOtterTest, insertTests)
 
 TEST(splayTreeOtterTest, basicEqualityTests)
 {
-    RandomTree<Otter> otterTree;
-    RandomTree<Otter> otterTree2;
+    SplayTree<Otter> otterTree;
+    SplayTree<Otter> otterTree2;
     // check that empty trees are equal
     EXPECT_TRUE(otterTree == otterTree2);
     Otter phokey = Otter{"phokey"};
@@ -223,10 +239,10 @@ TEST(splayTreeOtterTest, basicEqualityTests)
 
 TEST(splayTreeOtterTest, copyConstructorTests)
 {
-    RandomTree<Otter> otterTree;
+    SplayTree<Otter> otterTree;
     Otter phokey = Otter{"phokey"};
     otterTree.insert(phokey);
-    RandomTree<Otter> otterTree2{otterTree};
+    SplayTree<Otter> otterTree2{otterTree};
     // tests copy constructor copying one element tree
     ASSERT_EQ(otterTree, otterTree2);
     Otter test2 = Otter{"another"};
@@ -237,7 +253,7 @@ TEST(splayTreeOtterTest, copyConstructorTests)
         Otter o{std::to_string(i)};
         otterTree2.insert(o);
     }
-    RandomTree<Otter> otterTree3{otterTree2};
+    SplayTree<Otter> otterTree3{otterTree2};
     // test copying a larger tree
     // also tests equality operator on larger trees
     ASSERT_EQ(otterTree2, otterTree3);
@@ -246,10 +262,10 @@ TEST(splayTreeOtterTest, copyConstructorTests)
 
 TEST(splayTreeOtterTest, assignmentOperatorTests)
 {
-    RandomTree<Otter> otterTree;
+    SplayTree<Otter> otterTree;
     Otter phokey = Otter{"phokey"};
     otterTree.insert(phokey);
-    RandomTree<Otter> otterTree2;
+    SplayTree<Otter> otterTree2;
     ASSERT_NE(otterTree, otterTree2);
     otterTree2 = otterTree;
     ASSERT_EQ(otterTree, otterTree2);
@@ -259,7 +275,7 @@ TEST(splayTreeOtterTest, assignmentOperatorTests)
     }
     
     ASSERT_NE(otterTree, otterTree2);
-    RandomTree<Otter> otterTree3;
+    SplayTree<Otter> otterTree3;
     ASSERT_NE(otterTree2, otterTree3);
     otterTree3 = otterTree2;
     ASSERT_EQ(otterTree2, otterTree3);
@@ -271,19 +287,19 @@ TEST(splayTreeOtterTest, iteratorTests)
 {
     // using ints for the iterator tests so we can check dereferences work
     // with a simple for loop (string comparison gets weird, '19' < '2')
-    RandomTree<Otter> otterTree;
+    SplayTree<Otter> otterTree;
     for (int i = 0; i < 100; ++i) {
         otterTree.insert(Otter{std::to_string(i)});
     }
     int num = 0;
-    for (RandomTree<Otter>::iterator i = otterTree.begin(); i != otterTree.end(); ++i) {
+    for (SplayTree<Otter>::iterator i = otterTree.begin(); i != otterTree.end(); ++i) {
         *i;
         ++num;
     }
 }
 
 TEST(splayTreeOtterTest, deleteElementTests) {
-    RandomTree<Otter> otterTree;
+    SplayTree<Otter> otterTree;
     Otter phokey = Otter{"phokey"};
     otterTree.insert(phokey);
     // just an assurance that the delete is actually changing the value of
@@ -308,4 +324,4 @@ TEST(splayTreeOtterTest, deleteElementTests) {
         EXPECT_TRUE(deleted);
         ASSERT_EQ(otterTree.size(), i);
     }
-}
+}*/
