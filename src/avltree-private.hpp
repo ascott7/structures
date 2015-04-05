@@ -1,25 +1,25 @@
 /**
- * \file splaytree-private.hpp
+ * \file avltree-private.hpp
  * \author Andrew Scott
  *
- * \brief implementation of templated splay tree class
+ * \brief implementation of templated avl tree class
  */
 
 template<typename T>
-SplayTree<T>::SplayTree()
+AvlTree<T>::AvlTree()
             : size_{0}, root_{nullptr}
 {
     // nothing else to do
 }
 
 template<typename T>
-SplayTree<T>::~SplayTree()
+AvlTree<T>::~AvlTree()
 {
     delete root_;
 }
 
 template<typename T>
-SplayTree<T>::SplayTree(const SplayTree<T>& orig)
+AvlTree<T>::AvlTree(const AvlTree<T>& orig)
             : size_{0}, root_{nullptr}
 {
     for (iterator i = orig.begin(); i != orig.end(); ++i) {
@@ -28,15 +28,15 @@ SplayTree<T>::SplayTree(const SplayTree<T>& orig)
 }
 
 template<typename T>
-SplayTree<T>& SplayTree<T>::operator=(const SplayTree<T>& rhs)
+AvlTree<T>& AvlTree<T>::operator=(const AvlTree<T>& rhs)
 {
-    SplayTree<T> copy{rhs};
+    AvlTree<T> copy{rhs};
     swap(copy);
     return *this;
 }
 
 template<typename T>
-void SplayTree<T>::swap(SplayTree<T>& rhs)
+void AvlTree<T>::swap(AvlTree<T>& rhs)
 {
     using std::swap;
     swap(root_, rhs.root_);
@@ -44,25 +44,25 @@ void SplayTree<T>::swap(SplayTree<T>& rhs)
 }
 
 template<typename T>
-void swap(SplayTree<T>& lhs, SplayTree<T>& rhs)
+void swap(AvlTree<T>& lhs, AvlTree<T>& rhs)
 {
     lhs.swap(rhs);
 }
 
 template<typename T>
-size_t SplayTree<T>::size() const
+size_t AvlTree<T>::size() const
 {
     return size_;
 }
 
 template<typename T>
-size_t SplayTree<T>::height() const
+size_t AvlTree<T>::height() const
 {
     return subtreeHeight(root_);
 }
 
 template<typename T>
-bool SplayTree<T>::insert(const T& element)
+bool AvlTree<T>::insert(const T& element)
 {
     if (insertNode(root_, element)) {
         ++size_;
@@ -72,7 +72,7 @@ bool SplayTree<T>::insert(const T& element)
 }
 
 template<typename T>
-void SplayTree<T>::deleteRoot()
+void AvlTree<T>::deleteRoot()
 {
     Node* newRoot = root_->right_;
     // if the right side of the tree is empty, then we have to find the
@@ -110,7 +110,7 @@ void SplayTree<T>::deleteRoot()
 }
 
 template<typename T>
-bool SplayTree<T>::deleteOneElementTree(const T& element)
+bool AvlTree<T>::deleteOneElementTree(const T& element)
 {
     if (root_->element_ == element) {
         delete root_;
@@ -123,7 +123,7 @@ bool SplayTree<T>::deleteOneElementTree(const T& element)
 }
 
 template<typename T>
-void SplayTree<T>::deleteLeaf(Node* deletee)
+void AvlTree<T>::deleteLeaf(Node* deletee)
 {
     Node* parent = deletee->parent_;
     if (deletee->element_ < parent->element_) {
@@ -137,7 +137,7 @@ void SplayTree<T>::deleteLeaf(Node* deletee)
 }
 
 template<typename T>
-void SplayTree<T>::deleteStick(Node* deletee, bool deleteLeft)
+void AvlTree<T>::deleteStick(Node* deletee, bool deleteLeft)
 {
     Node* newChild;
 
@@ -167,7 +167,7 @@ void SplayTree<T>::deleteStick(Node* deletee, bool deleteLeft)
 }
 
 template<typename T>
-void SplayTree<T>::deleteTwoChildNode(Node* deletee)
+void AvlTree<T>::deleteTwoChildNode(Node* deletee)
 {
     // replace the node to delete with the new min
     // then delete that min
@@ -191,7 +191,7 @@ void SplayTree<T>::deleteTwoChildNode(Node* deletee)
 }
 
 template<typename T>
-bool SplayTree<T>::deleteElement(const T& element)
+bool AvlTree<T>::deleteElement(const T& element)
 {
     if (empty()) {
         return false;
@@ -250,7 +250,7 @@ bool SplayTree<T>::deleteElement(const T& element)
 }
 
 template<typename T>
-void SplayTree<T>::splayToRoot(Node* newRoot)
+void AvlTree<T>::splayToRoot(Node* newRoot)
 {
     // base case (we are at the root)
     if (newRoot->parent_ == nullptr) {
@@ -289,7 +289,7 @@ void SplayTree<T>::splayToRoot(Node* newRoot)
 }
 
 template<typename T>
-bool SplayTree<T>::contains(const T& element)
+bool AvlTree<T>::contains(const T& element)
 {
     if (size_ == 0) {
         return false;
@@ -298,7 +298,7 @@ bool SplayTree<T>::contains(const T& element)
 }
 
 template<typename T>
-bool SplayTree<T>::existsNode(Node* here, const T& element)
+bool AvlTree<T>::existsNode(Node* here, const T& element)
 {
     if (here == nullptr) {
         return false;
@@ -320,13 +320,13 @@ bool SplayTree<T>::existsNode(Node* here, const T& element)
 }
 
 template<typename T>
-bool SplayTree<T>::empty()
+bool AvlTree<T>::empty()
 {
     return (size_ == 0);
 }
 
 template<typename T>
-bool SplayTree<T>::operator==(const SplayTree<T>& rhs) const
+bool AvlTree<T>::operator==(const AvlTree<T>& rhs) const
 {
     // if the sizes are different the trees are not equal
     if (size() != rhs.size()) {
@@ -348,7 +348,7 @@ bool SplayTree<T>::operator==(const SplayTree<T>& rhs) const
 
 
 template<typename T>
-bool SplayTree<T>::operator!=(const SplayTree<T>& rhs) const
+bool AvlTree<T>::operator!=(const AvlTree<T>& rhs) const
 {
     return !(*this == rhs);
 }
@@ -359,7 +359,7 @@ bool SplayTree<T>::operator!=(const SplayTree<T>& rhs) const
 //   / \              / \
 //  A   C            C   E
 template <typename T> 
-void SplayTree<T>::rightRotate(Node* top)
+void AvlTree<T>::rightRotate(Node* top)
 {
     Node* newRoot = top->left_;          // b is d's left child
     // if C exists, we need to change it's parent to be d
@@ -390,7 +390,7 @@ void SplayTree<T>::rightRotate(Node* top)
 //       / \         / \
 //      C   E       A   C
 template <typename T> 
-void SplayTree<T>::leftRotate(Node* top) 
+void AvlTree<T>::leftRotate(Node* top) 
 {
     Node* newRoot = top->right_;      // d is b's right child
     // if C exists, we need to change it's parent to be b
@@ -416,7 +416,7 @@ void SplayTree<T>::leftRotate(Node* top)
 }
 
 template<typename T>
-bool SplayTree<T>::insertNode(Node*& here, const T& element)
+bool AvlTree<T>::insertNode(Node*& here, const T& element)
 {
     // if we have an empty tree, make a new node
     if (here == nullptr) {
@@ -449,7 +449,7 @@ bool SplayTree<T>::insertNode(Node*& here, const T& element)
 }
 
 template<typename T>
-size_t SplayTree<T>::subtreeHeight(Node* here) const
+size_t AvlTree<T>::subtreeHeight(Node* here) const
 {
     // recursive base case
     if (here == nullptr) {
@@ -464,21 +464,21 @@ size_t SplayTree<T>::subtreeHeight(Node* here) const
 }
 
 template<typename T>
-std::ostream& SplayTree<T>::printStatistics(std::ostream& out) const
+std::ostream& AvlTree<T>::printStatistics(std::ostream& out) const
 {
     out << "height " << height() << std::endl;
     return out;
 }
 
 template <typename T>
-std::ostream& SplayTree<T>::print(std::ostream& out) const
+std::ostream& AvlTree<T>::print(std::ostream& out) const
 {
     printPretty(root_, 1, 1, out);
     return out;
 }
 
 template<typename T>
-typename SplayTree<T>::iterator SplayTree<T>::begin() const
+typename AvlTree<T>::iterator AvlTree<T>::begin() const
 {
     Node* current = root_;
     std::stack<Node*> parents;
@@ -494,7 +494,7 @@ typename SplayTree<T>::iterator SplayTree<T>::begin() const
 }
 
 template<typename T>
-typename SplayTree<T>::iterator SplayTree<T>::end() const
+typename AvlTree<T>::iterator AvlTree<T>::end() const
 {
     std::stack<Node*> parents;
     return Iterator(nullptr);
@@ -505,7 +505,7 @@ typename SplayTree<T>::iterator SplayTree<T>::end() const
 // --------------------------------------
 template<typename T>
 // Print the arm branches (eg, /    \ ) on a line
-void SplayTree<T>::printBranches(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
+void AvlTree<T>::printBranches(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
   for (int i = 0; i < nodesInThisLevel / 2; i++) {  
     out << ((i == 0) ? std::setw(startLen-1) : std::setw(nodeSpaceLen-2)) << "" << ((*iter++) ? "/" : " ");
@@ -516,7 +516,7 @@ void SplayTree<T>::printBranches(int branchLen, int nodeSpaceLen, int startLen, 
 
 template<typename T>
 // Print the branches and node (eg, ___10___ )
-void SplayTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
+void AvlTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
   for (int i = 0; i < nodesInThisLevel; i++, iter++) {
     out << ((i == 0) ? std::setw(startLen) : std::setw(nodeSpaceLen)) << "" << ((*iter && (*iter)->left_) ? std::setfill('_') : std::setfill(' '));
@@ -538,7 +538,7 @@ void SplayTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, int
 
 template<typename T>
 // Print the leaves only (just for the bottom row)
-void SplayTree<T>::printLeaves(int indentSpace, int level, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
+void AvlTree<T>::printLeaves(int indentSpace, int level, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
   for (int i = 0; i < nodesInThisLevel; i++, iter++) {
     out << ((i == 0) ? std::setw(indentSpace+2) : std::setw(2*level+2)) << ((*iter) ? std::to_string((*iter)->element_) : "");
@@ -551,7 +551,7 @@ template<typename T>
 // @ param
 // level  Control how wide you want the tree to sparse (eg, level 1 has the minimum space between nodes, while level 2 has a larger space between nodes)
 // indentSpace  Change this to add some indent space to the left (eg, indentSpace of 0 means the lowest level of the left node will stick to the left margin)
-void SplayTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostream& out) const {
+void AvlTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostream& out) const {
   int h = subtreeHeight(root_); //maxHeight(root);
   int nodesInThisLevel = 1;
 
@@ -586,24 +586,24 @@ void SplayTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostr
 }
 
 // --------------------------------------
-// Implementation of SplayTree::Node
+// Implementation of AvlTree::Node
 // --------------------------------------
 template<typename T>
-SplayTree<T>::Node::Node(const T& element, Node* left, Node* right, Node* parent)
+AvlTree<T>::Node::Node(const T& element, Node* left, Node* right, Node* parent)
     :element_{element}, left_{left}, right_{right}, parent_{parent}
 {
     // nothing else to do
 }
 
 template<typename T>
-SplayTree<T>::Node::~Node()
+AvlTree<T>::Node::~Node()
 {
     delete left_;
     delete right_;
 }
 
 template<typename T>
-size_t SplayTree<T>::Node::size() const
+size_t AvlTree<T>::Node::size() const
 {
     size_t size = 1;
 
@@ -617,7 +617,7 @@ size_t SplayTree<T>::Node::size() const
 }
 
 template<typename T>
-std::ostream& SplayTree<T>::Node::print(std::ostream& out) const
+std::ostream& AvlTree<T>::Node::print(std::ostream& out) const
 {
         out << "(";
     if (left_ == nullptr) {
@@ -638,17 +638,17 @@ std::ostream& SplayTree<T>::Node::print(std::ostream& out) const
 }
 
 // --------------------------------------
-// Implementation of SplayTree::Iterator
+// Implementation of AvlTree::Iterator
 // --------------------------------------
 template<typename T>
-SplayTree<T>::Iterator::Iterator(Node* index)
+AvlTree<T>::Iterator::Iterator(Node* index)
     : current_{index}
 {
     // Nothing else to do.
 }
 
 template<typename T>
-typename SplayTree<T>::Iterator& SplayTree<T>::Iterator::operator++()
+typename AvlTree<T>::Iterator& AvlTree<T>::Iterator::operator++()
 {
     bool lastElement = false;
     // empty tree
@@ -716,19 +716,19 @@ typename SplayTree<T>::Iterator& SplayTree<T>::Iterator::operator++()
 }
 
 template<typename T>
-T& SplayTree<T>::Iterator::operator*() const
+T& AvlTree<T>::Iterator::operator*() const
 {
     return current_->element_;
 }
 
 template<typename T>
-bool SplayTree<T>::Iterator::operator==(const Iterator& rhs) const
+bool AvlTree<T>::Iterator::operator==(const Iterator& rhs) const
 {
     return (current_ == rhs.current_);
 }
 
 template<typename T>
-bool SplayTree<T>::Iterator::operator!=(const Iterator& rhs) const
+bool AvlTree<T>::Iterator::operator!=(const Iterator& rhs) const
 {
     return !(*this == rhs);
 }

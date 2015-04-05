@@ -1,14 +1,14 @@
 /**
- * \file splaytree.hpp
+ * \file avltree.hpp
  *
  * \author Andrew Scott
  *
- * \brief templated splay tree class
+ * \brief templated avl tree class
  *
  */
 
-#ifndef SPLAY_TREE_INCLUDED
-#define SPLAY_TREE_INCLUDED 1
+#ifndef AVL_TREE_INCLUDED
+#define AVL_TREE_INCLUDED 1
 #include <cstddef>
 #include <cassert>
 #include <iostream>
@@ -22,11 +22,11 @@
 template <typename T>
 
 /**
-* \class SplayTree
+* \class AvlTree
 * \brief A templated random tree
 */
 
-class SplayTree {
+class AvlTree {
 
 private:
    class Iterator; // Forward declaration1
@@ -38,21 +38,21 @@ public:
     * Default Constructor
     *
     */
-    SplayTree();
+    AvlTree();
 
     /**
     * \brief
     * Copy Constructor
     *
     */
-    SplayTree<T>(const SplayTree<T>& orig);
+    AvlTree<T>(const AvlTree<T>& orig);
 
     /**
     * \brief
     * Assignment Operator
     *
     */
-    SplayTree<T>& operator=(const SplayTree<T>& rhs);
+    AvlTree<T>& operator=(const AvlTree<T>& rhs);
 
     /**
     * \brief
@@ -60,14 +60,14 @@ public:
     *
     *
     */
-    void swap(SplayTree<T>& rhs);
+    void swap(AvlTree<T>& rhs);
 
     /**
     * \brief 
     * Default Destructor
     *
     */
-    ~SplayTree();
+    ~AvlTree();
 
     // Allow users to iterate over the contents of the list. 
     using iterator = Iterator; 
@@ -117,14 +117,14 @@ public:
     * Random Tree equality operator
     *
     */
-    bool operator==(const SplayTree<T>& rhs) const;
+    bool operator==(const AvlTree<T>& rhs) const;
 
     /**
     * \brief
     * Random Tree inequality operator
     *
     */
-    bool operator!=(const SplayTree<T>& rhs) const;
+    bool operator!=(const AvlTree<T>& rhs) const;
 
     /**
     * \brief
@@ -176,7 +176,7 @@ private:
         */
         size_t size() const;
 
-        //bool operator==(const SplayTree::Node& rhs) const;
+        //bool operator==(const AvlTree::Node& rhs) const;
 
         /**
         * \brief Print a node
@@ -309,7 +309,7 @@ private:
         bool operator!=(const Iterator& other) const;
 
     private:
-        friend class SplayTree;
+        friend class AvlTree;
         Iterator(Node* index);
         Node* current_;
     };
@@ -318,8 +318,8 @@ private:
 
 template<typename T>
 /// Provide a non-member version of swap to allow standard swap(x,y) usage.
-void swap(SplayTree<T>& lhs, SplayTree<T>& rhs);
+void swap(AvlTree<T>& lhs, AvlTree<T>& rhs);
 
-#include "splaytree-private.hpp"
+#include "avltree-private.hpp"
 
-#endif // SPLAY_TREE_INCLUDED
+#endif // AVL_TREE_INCLUDED
