@@ -17,6 +17,9 @@
 #include <gtest/gtest.h>
 #include "otter.hpp"
 
+// This test just checks that insert and contains() return the proper values.
+// To check that the splaying inserts and lookups were working, the trees were
+// printed out
 TEST(splayTreeIntTest, insertTests)
 {
     SplayTree<int> intTree;
@@ -26,39 +29,35 @@ TEST(splayTreeIntTest, insertTests)
     EXPECT_TRUE(intTree.contains(test));
     EXPECT_TRUE(intTree.size() == 1);
     EXPECT_TRUE(inserted);
-    int test2 = 120;
+    int test2 = 210;
     inserted = intTree.insert(test2);
     EXPECT_TRUE(intTree.contains(test2));
     EXPECT_TRUE(intTree.size() == 2);
     EXPECT_TRUE(inserted);
     // check that inserting again returns false
     EXPECT_FALSE(intTree.insert(test));
+    for (int i = 0; i < 20; ++i) {
+        EXPECT_FALSE(intTree.contains(i));
+        intTree.insert(i);
+        EXPECT_TRUE(intTree.contains(i));
+    }
+    // these couple lookups will force the tree to splay something to the
+    // root that is not there yet, so they are helping to test the
+    // splayToRoot() function in the splay tree
+    EXPECT_TRUE(intTree.contains(5));
+    EXPECT_TRUE(intTree.contains(10));
+    EXPECT_TRUE(intTree.contains(15));
+    EXPECT_TRUE(intTree.contains(17));
+    EXPECT_TRUE(intTree.contains(7));
+    EXPECT_TRUE(intTree.contains(2));
+    EXPECT_TRUE(intTree.contains(220));
+    // checks that the contains() lookups reduced the height of the tree
+    EXPECT_TRUE(intTree.height() < 10);
     intTree.print(std::cout);
-    intTree.insert(100);
-    intTree.insert(99);
-    intTree.insert(98);
-    intTree.insert(97);
+    EXPECT_TRUE(intTree.contains(11));
     intTree.print(std::cout);
-    std::cout << "inserting 230" << std::endl;
-    intTree.insert(230);
-    intTree.print(std::cout);
-    /*for (int i = 0; i < 10; ++i) {
-        int intToInsert = 0;
-        if (i % 2 == 0) {
-            intToInsert = i;
-        } else {
-            intToInsert = 100 - i;
-        }
-        EXPECT_FALSE(intTree.contains(intToInsert));
-        inserted = intTree.insert(intToInsert);
-        intTree.print(std::cout);
-        EXPECT_TRUE(intTree.contains(intToInsert));
-        EXPECT_TRUE(inserted);
-    }*/
-    // checks that tree is somewhat branching and is not forming a stick
-    //EXPECT_TRUE(intTree.height() < 30);
 }
-/*
+
 TEST(splayTreeIntTest, basicEqualityTests)
 {
     SplayTree<int> intTree;
@@ -129,8 +128,6 @@ TEST(splayTreeIntTest, assignmentOperatorTests)
 
 TEST(splayTreeIntTest, iteratorTests)
 {
-    // using ints for the iterator tests so we can check dereferences work
-    // with a simple for loop (string comparison gets weird, '19' < '2')
     SplayTree<int> intTree;
     for (int i = 0; i < 100; ++i) {
         intTree.insert(i);
@@ -171,7 +168,6 @@ TEST(splayTreeIntTest, deleteElementTests) {
         ASSERT_EQ(intTree.size(), 4 - i);
     }
 
-
     for (int i = 0; i < 200; ++i) {
         intTree.insert(i);
     }
@@ -208,8 +204,6 @@ TEST(splayTreeOtterTest, insertTests)
         EXPECT_TRUE(otterTree.contains(o));
         EXPECT_TRUE(inserted);
     }
-    // checks that tree is somewhat branching and is not forming a stick
-    EXPECT_TRUE(otterTree.height() < 30);
 }
 
 TEST(splayTreeOtterTest, basicEqualityTests)
@@ -285,8 +279,6 @@ TEST(splayTreeOtterTest, assignmentOperatorTests)
 
 TEST(splayTreeOtterTest, iteratorTests)
 {
-    // using ints for the iterator tests so we can check dereferences work
-    // with a simple for loop (string comparison gets weird, '19' < '2')
     SplayTree<Otter> otterTree;
     for (int i = 0; i < 100; ++i) {
         otterTree.insert(Otter{std::to_string(i)});
@@ -324,4 +316,4 @@ TEST(splayTreeOtterTest, deleteElementTests) {
         EXPECT_TRUE(deleted);
         ASSERT_EQ(otterTree.size(), i);
     }
-}*/
+}
