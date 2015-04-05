@@ -110,7 +110,7 @@ public:
     * Checks if an element is in the tree
     *
     */
-    bool contains(const T& element) const;
+    bool contains(const T& element);
 
     /**
     * \brief
@@ -247,7 +247,7 @@ private:
      *
      * \returns True if the element is present in the tree, false if otherwise
      */
-    bool existsNode(Node* here, const T& element) const;
+    bool existsNode(Node* here, const T& element);
 
     /**
     * \brief returns the height of the subtree with the given node as the root

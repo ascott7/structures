@@ -289,7 +289,7 @@ void SplayTree<T>::splayToRoot(Node* newRoot)
 }
 
 template<typename T>
-bool SplayTree<T>::contains(const T& element) const
+bool SplayTree<T>::contains(const T& element)
 {
     if (size_ == 0) {
         return false;
@@ -298,7 +298,7 @@ bool SplayTree<T>::contains(const T& element) const
 }
 
 template<typename T>
-bool SplayTree<T>::existsNode(Node* here, const T& element) const
+bool SplayTree<T>::existsNode(Node* here, const T& element)
 {
     if (here == nullptr) {
         return false;
@@ -314,6 +314,7 @@ bool SplayTree<T>::existsNode(Node* here, const T& element) const
     // element is not less than or greater than here->element_, so it must
     // be equal to here->element_
     else {
+        splayToRoot(here);
         return true;
     }
 }
