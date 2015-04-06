@@ -155,10 +155,11 @@ public:
 
 private:
     struct Node {
-        T element_;    ///> the element at this node
-        Node* left_;   ///> this node's left child
-        Node* right_;  ///> this node's right child
-        Node* parent_; ///> this node's parent
+        T element_;     ///> the element at this node
+        Node* left_;    ///> this node's left child
+        Node* right_;   ///> this node's right child
+        Node* parent_;  ///> this node's parent
+        int balance_;   ///> this node's balance (height of left subtree - right)
         /**
         * \brief Node constructor
         *
@@ -175,6 +176,10 @@ private:
         * \returns the size of this node (sum of its children's size)
         */
         size_t size() const;
+
+        void updateBalance();
+
+        size_t subtreeHeight() const;
 
         //bool operator==(const AvlTree::Node& rhs) const;
 
@@ -290,6 +295,8 @@ private:
     *
     */
     bool deleteOneElementTree(const T& element);
+
+    void checkBalanced(Node* startingNode);
 
     class Iterator
     {
