@@ -132,7 +132,13 @@ public:
     */
     bool empty();
 
-        /**
+    /**
+    * \brief returns true if the tree is balanced, false otherwise
+    *
+    */
+    bool isBalanced();
+
+    /**
      * \brief
      * Prints the tree in a readable form
      *
@@ -297,6 +303,8 @@ private:
     bool deleteOneElementTree(const T& element);
 
     void checkBalanced(Node* startingNode);
+
+    bool isBalancedNode(Node* here);
 
     class Iterator
     {
