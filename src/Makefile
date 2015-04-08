@@ -44,6 +44,9 @@ splaytree: splaytree-test
 avltree: avltree-test
 	./avltree-test
 
+rbtree: rbtree-test
+	./rbtree-test
+
 linkedlist-test: linkedlist-test.o otter.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
 
