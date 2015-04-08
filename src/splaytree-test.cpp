@@ -53,7 +53,7 @@ TEST(splayTreeIntTest, insertTests)
     EXPECT_TRUE(intTree.contains(220));
     // checks that the contains() lookups reduced the height of the tree
     EXPECT_TRUE(intTree.height() < 10);
-    intTree.print(std::cout);
+    //intTree.print(std::cout);
     EXPECT_TRUE(intTree.contains(11));
     intTree.print(std::cout);
 }
