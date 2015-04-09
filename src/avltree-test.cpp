@@ -40,7 +40,7 @@ TEST(avlTreeIntTest, insertTests)
         EXPECT_TRUE(intTree.isBalanced());
     }
     EXPECT_TRUE(intTree.height() < 8);
-    intTree.print(std::cout);
+    //intTree.print(std::cout);
 
     AvlTree<int> intTree2;
     for (int i = 0; i < 50; ++i) {
@@ -50,7 +50,7 @@ TEST(avlTreeIntTest, insertTests)
         EXPECT_TRUE(intTree2.contains(intToInsert));
         EXPECT_TRUE(intTree.isBalanced());
     }
-    intTree2.print(std::cout);
+    //intTree2.print(std::cout);
 }
 
 TEST(avlTreeIntTest, basicEqualityTests)
@@ -132,6 +132,16 @@ TEST(avlTreeIntTest, iteratorTests)
         ASSERT_EQ(num, *i);
         ++num;
     }
+    AvlTree<int>::iterator backwardIter = intTree.begin();
+    for (int j = 0; j < 99; ++j) {
+        ++backwardIter;
+    }
+    --num;
+    while (backwardIter != intTree.begin()) {
+        ASSERT_EQ(*backwardIter, num);
+        --backwardIter;
+        --num;
+    }
 }
 
 TEST(avlTreeIntTest, deleteElementTests) {
@@ -163,20 +173,17 @@ TEST(avlTreeIntTest, deleteElementTests) {
         ASSERT_EQ(intTree.size(), 4 - i);
     }
 
-    for (int i = 0; i < 30; ++i) {
+    for (int i = 0; i < 500; ++i) {
         intTree.insert(i);
     }
-    for (int i = 29; i >=0; --i) {
-        // check that lots of deletes work
-        EXPECT_TRUE(intTree.contains(i)) << "list should contain " << i;
-        bool deleted = intTree.deleteElement(i);
-        EXPECT_FALSE(intTree.contains(i));
-        EXPECT_TRUE(deleted);
-        ASSERT_EQ(intTree.size(), i);
+    for (int i = 499; i >=0; --i) {
+        int intToDelete = rand()%500;
+        intTree.deleteElement(intToDelete);
+        EXPECT_FALSE(intTree.contains(intToDelete));
         EXPECT_TRUE(intTree.isBalanced());
     }
 }
-/*
+
 TEST(avlTreeOtterTest, insertTests)
 {
     AvlTree<Otter> otterTree;
@@ -306,10 +313,10 @@ TEST(avlTreeOtterTest, deleteElementTests) {
     for (int i = 199; i >=0; --i) {
         Otter o{std::to_string(i)};
         // check that lots of deletes work
-        EXPECT_TRUE(otterTree.contains(o)) << "list should contain " << i;
+        EXPECT_TRUE(otterTree.contains(o));
         bool deleted = otterTree.deleteElement(o);
         EXPECT_FALSE(otterTree.contains(o));
         EXPECT_TRUE(deleted);
         ASSERT_EQ(otterTree.size(), i);
     }
-}*/
+}
