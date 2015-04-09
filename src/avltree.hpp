@@ -187,15 +187,6 @@ private:
 
         size_t subtreeHeight() const;
 
-        //bool operator==(const AvlTree::Node& rhs) const;
-
-        /**
-        * \brief Print a node
-        * \param out An output stream to print to
-        * \returns the output stream with the node printed to it
-        */
-        std::ostream& print(std::ostream& out) const;
-
         Node() = delete; // disable default constructor
         Node& operator=(const Node&) = delete; // disable assignment operator
     };
@@ -258,25 +249,15 @@ private:
      *
      * \returns True if the element is present in the tree, false if otherwise
      */
-    bool existsNode(Node* here, const T& element);
+    Node* findNode(Node* here, const T& element);
+
+    Node* getNextNode(Node* here);
 
     /**
     * \brief returns the height of the subtree with the given node as the root
     *
     */
     size_t subtreeHeight(Node* here) const;
-
-    /**
-    * \brief splays the specified element to the root of the tree
-    *
-    */
-    void splayToRoot(Node* newRoot);
-
-    /**
-    * \brief deletes the root element
-    *
-    */
-    void deleteRoot();
 
     /**
     * \brief deletes a leaf
@@ -319,6 +300,7 @@ private:
 
         // Iterator operations
         Iterator& operator++();
+        Iterator& operator--();
         T& operator*() const;
         bool operator==(const Iterator& other) const;
         bool operator!=(const Iterator& other) const;
