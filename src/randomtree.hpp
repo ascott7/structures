@@ -207,7 +207,7 @@ private:
      * \param top The node to rotate about
      * 
      */
-    void rightRotate(Node*& top);
+    void rightRotate(Node* top);
 
     /**
      * \brief
@@ -216,7 +216,7 @@ private:
      * \param top The node to rotate about
      * 
      */
-    void leftRotate(Node*& top);
+    void leftRotate(Node* top);
 
 
     /**
@@ -247,7 +247,9 @@ private:
      *
      * \returns True if the element is present in the tree, false if otherwise
      */
-    bool existsNode(Node* here, const T& element) const;
+    Node* findNode(Node* here, const T& element) const;
+
+    Node* getNextNode(Node* here);
 
     /**
     * \brief returns the height of the subtree with the given node as the root
@@ -298,6 +300,7 @@ private:
 
         // Iterator operations
         Iterator& operator++();
+        Iterator& operator--();
         T& operator*() const;
         bool operator==(const Iterator& other) const;
         bool operator!=(const Iterator& other) const;
