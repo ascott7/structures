@@ -176,15 +176,6 @@ private:
         */
         size_t size() const;
 
-        //bool operator==(const SplayTree::Node& rhs) const;
-
-        /**
-        * \brief Print a node
-        * \param out An output stream to print to
-        * \returns the output stream with the node printed to it
-        */
-        std::ostream& print(std::ostream& out) const;
-
         Node() = delete; // disable default constructor
         Node& operator=(const Node&) = delete; // disable assignment operator
     };
@@ -247,7 +238,9 @@ private:
      *
      * \returns True if the element is present in the tree, false if otherwise
      */
-    bool existsNode(Node* here, const T& element);
+    Node* findNode(Node* here, const T& element);
+
+    Node* getNextNode(Node* here);
 
     /**
     * \brief returns the height of the subtree with the given node as the root
@@ -304,6 +297,7 @@ private:
 
         // Iterator operations
         Iterator& operator++();
+        Iterator& operator--();
         T& operator*() const;
         bool operator==(const Iterator& other) const;
         bool operator!=(const Iterator& other) const;
