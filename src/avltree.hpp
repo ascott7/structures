@@ -110,7 +110,7 @@ public:
     * Checks if an element is in the tree
     *
     */
-    bool contains(const T& element);
+    bool contains(const T& element) const;
 
     /**
     * \brief
@@ -249,7 +249,7 @@ private:
      *
      * \returns True if the element is present in the tree, false if otherwise
      */
-    Node* findNode(Node* here, const T& element);
+    Node* findNode(Node* here, const T& element) const;
 
     Node* getNextNode(Node* here);
 

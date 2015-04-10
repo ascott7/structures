@@ -56,6 +56,12 @@ size_t AvlTree<T>::size() const
 }
 
 template<typename T>
+size_t AvlTree<T>::height() const
+{
+    return subtreeHeight(root_);
+}
+
+template<typename T>
 bool AvlTree<T>::empty()
 {
     return (size_ == 0);
@@ -89,12 +95,6 @@ bool AvlTree<T>::operator!=(const AvlTree<T>& rhs) const
 }
 
 template<typename T>
-size_t AvlTree<T>::height() const
-{
-    return subtreeHeight(root_);
-}
-
-template<typename T>
 size_t AvlTree<T>::subtreeHeight(Node* here) const
 {
     // recursive base case
@@ -110,7 +110,7 @@ size_t AvlTree<T>::subtreeHeight(Node* here) const
 }
 
 template<typename T>
-bool AvlTree<T>::contains(const T& element)
+bool AvlTree<T>::contains(const T& element) const
 {
     if (findNode(root_, element) == nullptr) {
         return false;
@@ -120,7 +120,7 @@ bool AvlTree<T>::contains(const T& element)
 }
 
 template<typename T>
-typename AvlTree<T>::Node* AvlTree<T>::findNode(Node* here, const T& element)
+typename AvlTree<T>::Node* AvlTree<T>::findNode(Node* here, const T& element) const
 {
     if (here == nullptr) {
         return nullptr;
@@ -251,20 +251,17 @@ bool AvlTree<T>::deleteElement(const T& element)
     }
     // if the element to delete is a leaf, just remove the leaf
     if (deletee->left_ == nullptr && deletee->right_ == nullptr) {
-        //std::cout << "deleting a leaf" << std::endl;
         deleteLeaf(deletee);
         return true;
     }
     // if the node to delete has one child, replace the node with its child
     else if (deletee->left_ == nullptr ^ deletee->right_ == nullptr) {
-        //std::cout << "deleting in a stick" << std::endl;
         deleteStick(deletee, deletee == deletee->parent_->left_);
         return true;
     }
     // if we get to this point, we know that our node to delete has two
     // children
     else {
-        //std::cout << "deleting a node with two children" << std::endl;
         deleteTwoChildNode(deletee);
         return true;
     }
@@ -356,7 +353,7 @@ void AvlTree<T>::deleteTwoChildNode(Node* deletee)
     // replacement's old node location
     Node* newNode = getNextNode(deletee);
     deletee->element_ = newNode->element_;
-    // if the new child to delete is a leaf, delete it as a leaf
+    // if the old node's location is a leaf, delete it as a leaf
     if (newNode->left_ == nullptr && newNode->right_ == nullptr){
         deleteLeaf(newNode);
     }
@@ -469,13 +466,11 @@ template<typename T>
 typename AvlTree<T>::iterator AvlTree<T>::begin() const
 {
     Node* current = root_;
-    std::stack<Node*> parents;
     // if tree is empty, we don't want to dereference current
     if (current == nullptr) {
         return Iterator(current);
     }
     while (current->left_ != nullptr) {
-        parents.push(current);
         current = current->left_;
     }
     return Iterator(current);
@@ -484,12 +479,14 @@ typename AvlTree<T>::iterator AvlTree<T>::begin() const
 template<typename T>
 typename AvlTree<T>::iterator AvlTree<T>::end() const
 {
-    std::stack<Node*> parents;
     return Iterator(nullptr);
 }
 
 // --------------------------------------
+//
 // Implementation of Pretty Print
+// (taken from http://articles.leetcode.com/2010/09/how-to-pretty-print-binary-tree.html)
+//
 // --------------------------------------
 template<typename T>
 // Print the arm branches (eg, /    \ ) on a line
@@ -574,7 +571,9 @@ void AvlTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostrea
 }
 
 // --------------------------------------
+//
 // Implementation of AvlTree::Node
+//
 // --------------------------------------
 template<typename T>
 AvlTree<T>::Node::Node(const T& element, Node* left, Node* right, Node* parent)
@@ -639,8 +638,11 @@ size_t AvlTree<T>::Node::subtreeHeight() const
 }
 
 // --------------------------------------
+//
 // Implementation of AvlTree::Iterator
+//
 // --------------------------------------
+
 template<typename T>
 AvlTree<T>::Iterator::Iterator(Node* index)
     : current_{index}
