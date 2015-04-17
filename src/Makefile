@@ -16,6 +16,7 @@ TARGETS = linkedlist-test randomtree-test splaytree-test avltree-test \
 # http://stackoverflow.com/questions/20746232/how-to-properly-setup-googletest
 # -on-os-x-aside-from-xcode
 GTEST_LIB =	-lgtest -lgtest_main
+export MAKEFLAGS="-j 8
 
 
 
@@ -24,13 +25,14 @@ GTEST_LIB =	-lgtest -lgtest_main
 all: $(TARGETS)
 
 clean:
-	rm *.o $(TARGETS)
+	rm -f *.o $(TARGETS)
 
-test: linkedlist-test randomtree-test splaytree-test avltree-test
+test: $(TARGETS)
 	./linkedlist-test
 	./randomtree-test
 	./splaytree-test
 	./avltree-test
+	./rbtree-test
 
 linkedlist: linkedlist-test
 	./linkedlist-test
