@@ -230,6 +230,8 @@ private:
      */
     void fixSizeLeftRotate(Node* here);
 
+    size_t nodeSize(Node* here) const;
+
 
     /**
      * \brief

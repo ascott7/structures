@@ -29,7 +29,12 @@ TEST(randomTreeIntTest, insertTests)
     int test2 = 220;
     inserted = intTree.insert(test2);
     EXPECT_TRUE(intTree.contains(test2));
+    
     EXPECT_TRUE(intTree.size() == 2);
+    
+    intTree.print(std::cout);
+    std::cout<<intTree.size()<<std::endl;
+
     EXPECT_TRUE(inserted);
     // check that inserting again returns false
     EXPECT_FALSE(intTree.insert(test));

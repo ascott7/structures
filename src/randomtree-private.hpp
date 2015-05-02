@@ -52,7 +52,7 @@ void swap(RandomTree<T>& lhs, RandomTree<T>& rhs)
 template<typename T>
 size_t RandomTree<T>::size() const
 {
-    return size_;
+    return nodeSize(root_);
 }
 
 template<typename T>
@@ -205,9 +205,11 @@ bool RandomTree<T>::insertNodeAtRoot(Node*& here, const T& element)
     } else if (element < here->element_) {
         if (here->left_ == nullptr) {
             here->left_ = new Node(element, nullptr, nullptr, here);
+            ++here->size_;
             rightRotate(here);
             return true;
         } else if (insertNodeAtRoot(here->left_, element)) {
+            ++here->size_;
             rightRotate(here);
             return true;
         }
@@ -215,10 +217,12 @@ bool RandomTree<T>::insertNodeAtRoot(Node*& here, const T& element)
     } else if (element > here->element_) {
         if (here->right_ == nullptr) {
             here->right_ = new Node(element, nullptr, nullptr, here);
+            ++here->size_;
             leftRotate(here);
             return true;
         }
         if (insertNodeAtRoot(here->right_, element)) {
+            ++here->size_;
             leftRotate(here); 
             return true;
         }
@@ -437,18 +441,25 @@ void RandomTree<T>::leftRotate(Node* top)
 template <typename T> 
 void RandomTree<T>::fixSizeRightRotate(Node* here)
 {
-    size_t hereSize = here->size_;
-    here->size_ = here->right_->size_ + here->left_->right_->size_;
+    size_t hereSize = nodeSize(here);
+    here->size_ = nodeSize(here->right_) + nodeSize(here->left_->right_);
     here->left_->size_ = hereSize;
 }
-
 
 template <typename T> 
 void RandomTree<T>::fixSizeLeftRotate(Node* here)
 {
-    size_t hereSize = here->size_;
-    here->size_ = here->left_->size_ + here->right_->left_->size_;
+    size_t hereSize = nodeSize(here);
+    here->size_ = nodeSize(here->left_) + nodeSize(here->right_->left_);
     here->right_->size_ = hereSize;
+}
+
+template <typename T> 
+size_t RandomTree<T>::nodeSize(Node* here) const
+{
+    if (!here)
+        return 0;
+    return here->size_;
 }
 
 template<typename T>
