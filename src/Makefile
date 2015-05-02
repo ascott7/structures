@@ -16,6 +16,7 @@ TARGETS = linkedlist-test randomtree-test splaytree-test avltree-test \
 # http://stackoverflow.com/questions/20746232/how-to-properly-setup-googletest
 # -on-os-x-aside-from-xcode
 GTEST_LIB =	-lgtest -lgtest_main
+BENCH_OBJECTS = bench.o 
 export MAKEFLAGS="-j 8
 
 
