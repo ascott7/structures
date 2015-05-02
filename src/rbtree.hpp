@@ -3,7 +3,7 @@
  *
  * \author Andrew Scott
  *
- * \brief templated red-black tree class
+ * \brief templated red black tree class
  *
  */
 
@@ -18,6 +18,12 @@
 #include <list>
 #include <iomanip>
 #include <cmath>
+
+
+#define RESET   "\033[0m"
+#define BLACK   "\033[30m"      /* Black */
+#define RED     "\033[31m"      /* Red */
+#define WHITE   "\033[37m"      /* White */
 
 template <typename T>
 
@@ -110,7 +116,7 @@ public:
     * Checks if an element is in the tree
     *
     */
-    bool contains(const T& element);
+    bool contains(const T& element) const;
 
     /**
     * \brief
@@ -130,13 +136,13 @@ public:
     * \brief
     * returns true if the tree is empty, false otherwise
     */
-    bool empty();
+    bool empty() const;
 
     /**
     * \brief returns true if the tree is balanced, false otherwise
     *
     */
-    bool isBalanced();
+    bool hasRBProperties() const;
 
     /**
      * \brief
@@ -165,12 +171,13 @@ private:
         Node* left_;    ///> this node's left child
         Node* right_;   ///> this node's right child
         Node* parent_;  ///> this node's parent
-        int balance_;   ///> this node's balance (height of left subtree - right)
+        bool isRed_;    ///> true if this node is red, false if black
+        bool isDoubleBlack_;
         /**
         * \brief Node constructor
         *
         */
-        Node(const T& element, Node* left, Node* right, Node* parent);
+        Node(const T& element, Node* left, Node* right, Node* parent, bool isRed);
         /**
         * \brief default destructor
         *
@@ -183,18 +190,19 @@ private:
         */
         size_t size() const;
 
-        void updateBalance();
-
         size_t subtreeHeight() const;
 
-        //bool operator==(const RBTree::Node& rhs) const;
+        bool hasOneChild() const;
 
-        /**
-        * \brief Print a node
-        * \param out An output stream to print to
-        * \returns the output stream with the node printed to it
-        */
-        std::ostream& print(std::ostream& out) const;
+        bool isThreeNode() const;
+
+        void pushUp();
+
+        void makeThreeNode();
+
+        bool hasRBProperties();
+
+        size_t numBlackNodes();
 
         Node() = delete; // disable default constructor
         Node& operator=(const Node&) = delete; // disable assignment operator
@@ -258,25 +266,15 @@ private:
      *
      * \returns True if the element is present in the tree, false if otherwise
      */
-    bool existsNode(Node* here, const T& element);
+    Node* findNode(Node* here, const T& element) const;
+
+    Node* getNextNode(Node* here);
 
     /**
     * \brief returns the height of the subtree with the given node as the root
     *
     */
     size_t subtreeHeight(Node* here) const;
-
-    /**
-    * \brief splays the specified element to the root of the tree
-    *
-    */
-    void splayToRoot(Node* newRoot);
-
-    /**
-    * \brief deletes the root element
-    *
-    */
-    void deleteRoot();
 
     /**
     * \brief deletes a leaf
@@ -302,9 +300,13 @@ private:
     */
     bool deleteOneElementTree(const T& element);
 
-    void checkBalanced(Node* startingNode);
+    void rebalanceAfterInsert(Node* here);
 
-    bool isBalancedNode(Node* here);
+    void rebalanceAfterDelete(Node* here);
+
+    void pushUp(Node* here);
+
+    void pushDownBlackness(Node* here);
 
     class Iterator
     {
@@ -319,6 +321,7 @@ private:
 
         // Iterator operations
         Iterator& operator++();
+        Iterator& operator--();
         T& operator*() const;
         bool operator==(const Iterator& other) const;
         bool operator!=(const Iterator& other) const;
@@ -335,6 +338,6 @@ template<typename T>
 /// Provide a non-member version of swap to allow standard swap(x,y) usage.
 void swap(RBTree<T>& lhs, RBTree<T>& rhs);
 
-#include "rbtree-private.hpp"
+#include "RBTree-private.hpp"
 
 #endif // RB_TREE_INCLUDED

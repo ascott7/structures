@@ -2,7 +2,7 @@
  * \file rbtree-private.hpp
  * \author Andrew Scott
  *
- * \brief implementation of templated red-black tree class
+ * \brief implementation of templated red black tree class
  */
 
 template<typename T>
@@ -62,298 +62,7 @@ size_t RBTree<T>::height() const
 }
 
 template<typename T>
-bool RBTree<T>::insert(const T& element)
-{
-    if (insertNode(root_, element)) {
-        ++size_;
-        return true;
-    }
-    return false;
-}
-
-template<typename T>
-void RBTree<T>::checkBalanced(Node* startingNode)
-{
-    if (startingNode == nullptr) {
-        return;
-    }
-    //std::cout << "called checkBalanced on " << startingNode->element_;
-    startingNode->updateBalance();
-    //std::cout << "balance_ is " << startingNode->balance_ << std::endl;
-    // left subtree has height 2 greater than right subtree
-    if (startingNode->balance_ < -1) {
-        if (startingNode->left_->balance_ == 1) {
-            leftRotate(startingNode->left_);
-            rightRotate(startingNode);
-        }
-        else if (startingNode->left_->balance_ == -1) {
-            rightRotate(startingNode);
-        }
-        else if (startingNode->left_->balance_ == 0) {
-            rightRotate(startingNode);
-        }
-        startingNode->updateBalance();
-        if (startingNode->parent_ != nullptr) {
-            startingNode->parent_->updateBalance();
-            if (startingNode->parent_->balance_ != 0) {
-                checkBalanced(startingNode->parent_);
-            }
-        }
-
-        //leftRotate(startingNode);
-        //checkBalanced(startingNode->parent_);
-    }
-    // right subtree has a height 2 greater than left subtree
-    else if (startingNode->balance_ > 1) {
-        //std::cout << "right child balance_ is " << startingNode->right_->balance_ << std::endl;
-        if (startingNode->right_->balance_ == -1) {
-            rightRotate(startingNode->right_);
-            leftRotate(startingNode);
-        }
-        else if (startingNode->right_->balance_ == 1) {
-            leftRotate(startingNode);
-        }
-        else if (startingNode->right_->balance_ == 0) {
-            leftRotate(startingNode);
-        }
-        startingNode->updateBalance();
-        if (startingNode->parent_ != nullptr) {
-            startingNode->parent_->updateBalance();
-            if (startingNode->parent_->balance_ != 0) {
-                checkBalanced(startingNode->parent_);
-            }
-        }
-    } //else if (startingNode->balance_ == 0) {
-        // we are done
-    //} 
-    else {
-        checkBalanced(startingNode->parent_);
-    }
-}
-
-template<typename T>
-void RBTree<T>::deleteRoot()
-{
-    Node* newRoot = root_->right_;
-    // if the right side of the tree is empty, then we have to find the
-    // next largest element in the tree after the current root
-    if (newRoot == nullptr) {
-        newRoot = root_->left_;
-        while (newRoot->right_ != nullptr) {
-            //newRootParent = newRoot;
-            newRoot = newRoot->right_;
-        }
-    }
-    else {
-        // otherwise find the root's inorder successor
-        while (newRoot->left_ != nullptr) {
-            //newRootParent = newRoot;
-            newRoot = newRoot->left_;
-        }
-    }
-    root_->element_ = newRoot->element_;
-
-    if (newRoot->left_ == nullptr && newRoot->right_ == nullptr) {
-        //std::cout << "calling delete leaf with " << newRoot->element_ << " " << root_->element_ << std::endl;
-        deleteLeaf(newRoot);
-    }
-
-    else if (newRoot->left_ == nullptr ^ newRoot->right_ == nullptr) {
-        //std::cout << "calling delete root stick with " << newRootParent->element_ << " " << newRoot->element_ << std::endl;
-        deleteStick(newRoot, newRoot->parent_->left_ == newRoot);
-    }
-
-    else {
-        //std::cout << "calling delete two child node with " << newRoot->element_ << std::endl;
-        deleteTwoChildNode(newRoot);
-    }
-}
-
-template<typename T>
-bool RBTree<T>::deleteOneElementTree(const T& element)
-{
-    if (root_->element_ == element) {
-        delete root_;
-        root_ = nullptr;
-        --size_;
-        return true;
-    } else {
-        return false;
-    }
-}
-
-template<typename T>
-void RBTree<T>::deleteLeaf(Node* deletee)
-{
-    Node* parent = deletee->parent_;
-    if (deletee->element_ < parent->element_) {
-        delete parent->left_;
-        parent->left_ = nullptr;
-    } else if (deletee->element_ > parent->element_) {
-        delete parent->right_;
-        parent->right_ = nullptr;
-    } 
-    // if the deletee is equal to its parent (can happen when deleting root)
-    else {
-        if (parent->right_ == nullptr) {
-            delete parent->left_;
-            parent->left_ = nullptr;
-        } else {
-            delete parent->right_;
-            parent->right_ = nullptr;
-        }
-    }
-    checkBalanced(parent);
-    --size_;
-}
-
-template<typename T>
-void RBTree<T>::deleteStick(Node* deletee, bool deleteLeft)
-{
-    Node* newChild;
-
-    // find the element to delete's child
-    if (deletee->left_ == nullptr) {
-        newChild = deletee->right_;
-    }
-    else {
-        newChild = deletee->left_;
-    }
-    // if the node to delete was the left child of the parent, make the
-    // node's child its parent's left node
-    if (deleteLeft) {
-        deletee->parent_->left_ = newChild;
-    }
-    // otherwise make it its parent's right node
-    else {
-        deletee->parent_->right_ = newChild;
-    }
-    newChild->parent_ = deletee->parent_;
-    // set the deletee's children to nullptr so we don't delete any more nodes
-    // when deleting the deletee
-    deletee->left_ = nullptr;
-    deletee->right_ = nullptr;
-    delete deletee;
-    checkBalanced(newChild->parent_);
-    --size_;
-}
-
-template<typename T>
-void RBTree<T>::deleteTwoChildNode(Node* deletee)
-{
-    // replace the node to delete with the new min
-    // then delete that min
-    Node* newNode = deletee->right_;
-    // find the deletee's inorder successor
-    while (newNode->left_ != nullptr) {
-        //newNodeParent = newNode;
-        newNode = newNode->left_;
-    }
-    deletee->element_ = newNode->element_;
-    // if the new child to delete is a leaf, delete it as a leaf
-    if (newNode->left_ == nullptr && newNode->right_ == nullptr){
-        //std::cout << "calling delete leaf with " << newNodeParent->element_ << " " << deletee->element_ << std::endl;
-        deleteLeaf(newNode);
-    }
-    // otherwise it must be a stick, so delete it as a stick
-    else {
-        //std::cout << "calling delete stick with " << newNodeParent->element_ << " " << newNode->element_ << " " << newNode->element_ << std::endl;
-        deleteStick(newNode, newNode->parent_->left_ == newNode);
-    }
-}
-
-template<typename T>
-bool RBTree<T>::deleteElement(const T& element)
-{
-    if (empty()) {
-        return false;
-    }
-    if (size_ == 1) {
-        return deleteOneElementTree(element);
-    }
-
-    if (root_->element_ == element) {
-        //std::cout << "deleting root" << std::endl;
-        deleteRoot();
-        return true;
-    }
-
-    Node* deletee = root_;
-    // find the element to delete
-    while (deletee != nullptr && deletee->element_ != element) {
-        // if we need to go left to find our element but we can't go left
-        // then the element doesn't exist
-        if (element < deletee->element_) {
-            if (deletee->left_ == nullptr) {
-                return false;
-            } else {
-                deletee = deletee->left_;
-            }
-        } else if (element > deletee->element_) {
-            if (deletee->right_ == nullptr) {
-                return false;
-            } else {
-                deletee = deletee->right_;
-            }
-        }
-    }
-    // otherwise we now have to delete the element
-    // if the element to delete is a leaf, just remove the leaf
-    if (deletee->left_ == nullptr && deletee->right_ == nullptr) {
-        //std::cout << "deleting a leaf" << std::endl;
-        deleteLeaf(deletee);
-        return true;
-    }
-    // if the node to delete has one child, replace the node with its child
-    else if (deletee->left_ == nullptr ^ deletee->right_ == nullptr) {
-        //std::cout << "deleting in a stick" << std::endl;
-        deleteStick(deletee, deletee == deletee->parent_->left_);
-        return true;
-    }
-    // if we get to this point, we know that our node to delete has two
-    // children
-    else {
-        //std::cout << "deleting a node with two children" << std::endl;
-        deleteTwoChildNode(deletee);
-        return true;
-    }
-
-
-}
-
-template<typename T>
-bool RBTree<T>::contains(const T& element)
-{
-    if (size_ == 0) {
-        return false;
-    }
-    return existsNode(root_, element);
-}
-
-template<typename T>
-bool RBTree<T>::existsNode(Node* here, const T& element)
-{
-    if (here == nullptr) {
-        return false;
-    } 
-    // continue searching to the left
-    else if (element < here->element_) {
-        return existsNode(here->left_, element);
-    }
-    // continue searching to the right
-    else if (element > here->element_) {
-        return existsNode(here->right_, element);
-    } 
-    // element is not less than or greater than here->element_, so it must
-    // be equal to here->element_
-    else {
-        //splayToRoot(here);
-        return true;
-    }
-}
-
-template<typename T>
-bool RBTree<T>::empty()
+bool RBTree<T>::empty() const
 {
     return (size_ == 0);
 }
@@ -379,13 +88,334 @@ bool RBTree<T>::operator==(const RBTree<T>& rhs) const
     return true;
 }
 
-
 template<typename T>
 bool RBTree<T>::operator!=(const RBTree<T>& rhs) const
 {
     return !(*this == rhs);
 }
 
+template<typename T>
+size_t RBTree<T>::subtreeHeight(Node* here) const
+{
+    // recursive base case
+    if (here == nullptr) {
+        return 0;
+    }
+    // recursively get the left and right subtree heights
+    size_t leftSize = subtreeHeight(here->left_);
+    size_t rightSize = subtreeHeight(here->right_);
+
+    // the taller of the two subtrees is the height of the overall subtree
+    return 1 + std::max(leftSize, rightSize);
+}
+
+template<typename T>
+bool RBTree<T>::hasRBProperties() const
+{
+    if (empty()) {
+        return true;
+    }
+    if (root_->isRed_) {
+        return false;
+    }
+    return root_->hasRBProperties();
+}
+
+template<typename T>
+bool RBTree<T>::contains(const T& element) const
+{
+    if (findNode(root_, element) == nullptr) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+template<typename T>
+typename RBTree<T>::Node* RBTree<T>::findNode(Node* here, const T& element) const
+{
+    if (here == nullptr) {
+        return nullptr;
+    } 
+    // continue searching to the left
+    else if (element < here->element_) {
+        return findNode(here->left_, element);
+    }
+    // continue searching to the right
+    else if (element > here->element_) {
+        return findNode(here->right_, element);
+    } 
+    // element is not less than or greater than here->element_, so it must
+    // be equal to here->element_
+    else {
+        return here;
+    }
+}
+
+template<typename T>
+bool RBTree<T>::insert(const T& element)
+{
+    if (insertNode(root_, element)) {
+        ++size_;
+        return true;
+    }
+    return false;
+}
+
+template<typename T>
+bool RBTree<T>::insertNode(Node*& here, const T& element)
+{
+    // if we have an empty tree, make a new node
+    if (here == nullptr) {
+        here = new Node(element, nullptr, nullptr, nullptr, false);
+        return true;
+    }
+    // otherwise go down to the next level in the tree
+    else if (element < here->element_) {
+        if (here->left_ == nullptr) {
+            here->left_ = new Node(element, nullptr, nullptr, here, true);
+            rebalanceAfterInsert(here->left_);
+            return true;
+        } else {
+            return insertNode(here->left_, element);
+        }
+    } else if (element > here->element_) {
+        if (here->right_ == nullptr) {
+            here->right_ = new Node(element, nullptr, nullptr, here, true);
+            rebalanceAfterInsert(here->right_);
+            return true;
+        } else {
+            return insertNode(here->right_, element);
+        }
+    } 
+    // if we aren't less than or greater than the element, we must be equal
+    // and thus we can't insert
+    else {
+        return false;
+    }
+}
+
+template<typename T>
+void RBTree<T>::rebalanceAfterInsert(Node* here)
+{
+    //print(std::cout);
+    if (here == nullptr) {
+        return;
+    }
+    // node is root
+    if (here->parent_ == nullptr) {
+        here->isRed_ = false;
+        return;
+    }
+    Node* parent = here->parent_;
+    Node* grandparent = here->parent_->parent_;
+    // if parent is black and we are red, we are done
+    if (here->isRed_ && !parent->isRed_) {
+        if (grandparent == nullptr) {
+            // all done
+        }
+    }
+    else if (here->isRed_ && parent->isRed_) {
+        if (grandparent->isThreeNode()) {
+            pushDownBlackness(grandparent);
+            rebalanceAfterInsert(grandparent);
+        } else {
+            if (grandparent->hasOneChild()) {
+                if (parent == grandparent->left_) {
+                    rightRotate(grandparent);
+                }
+                else if (parent == grandparent->right_) {
+                    leftRotate(grandparent);
+                }
+                parent->makeThreeNode();
+            }
+            else if (parent == grandparent->right_) {
+                leftRotate(grandparent);
+            }
+            else if (parent == grandparent->left_) {
+                rightRotate(grandparent);
+            }
+            rebalanceAfterInsert(parent);
+        }
+    }
+}
+
+template<typename T>
+void RBTree<T>::pushUp(Node* here)
+{
+    here->isRed_ = true;
+    if (here->left_ != nullptr) {
+        here->left_->isRed_ = false;
+    }
+    if (here->right_ != nullptr) {
+        here->right_->isRed_ = false;
+    }
+}
+
+template<typename T>
+void RBTree<T>::pushDownBlackness(Node* here)
+{
+    here->isRed_ = true;
+    if (here->left_ != nullptr) {
+        here->left_->isRed_ = false;
+    }
+    if (here->right_ != nullptr) {
+        here->right_->isRed_ = false;
+    }
+    root_->isRed_ = false;
+}
+
+template<typename T>
+bool RBTree<T>::deleteElement(const T& element)
+{
+    if (empty()) {
+        return false;
+    }
+    if (size_ == 1) {
+        return deleteOneElementTree(element);
+    }
+    Node* deletee;    // the node to delete
+    if (root_->element_ == element) {
+        deletee = getNextNode(root_);
+        // set the root's value to be it's replacement's value, then proceed to
+        // delete the old node containing the replacement
+        root_->element_ = deletee->element_;
+    } else {
+        deletee = findNode(root_, element);
+        // if we couldn't find a node holding the element, we can't delete
+        if (deletee == nullptr) {
+            return false;
+        }
+    }
+    // if the element to delete is a leaf, just remove the leaf
+    if (deletee->left_ == nullptr && deletee->right_ == nullptr) {
+        deleteLeaf(deletee);
+        return true;
+    }
+    // if the node to delete has one child, replace the node with its child
+    else if (deletee->left_ == nullptr ^ deletee->right_ == nullptr) {
+        deleteStick(deletee, deletee == deletee->parent_->left_);
+        return true;
+    }
+    // if we get to this point, we know that our node to delete has two
+    // children
+    else {
+        deleteTwoChildNode(deletee);
+        return true;
+    }
+}
+
+template<typename T>
+typename RBTree<T>::Node* RBTree<T>::getNextNode(Node* here)
+{
+    iterator nextNode = Iterator(here);
+    // go one to the right if we can
+    if (++nextNode == end()) {
+        // if we can't we go back one (we were at the last element so we can't
+        // go to the right)
+        nextNode = --(Iterator(root_));
+    }
+    return findNode(root_, *nextNode);
+}
+
+template<typename T>
+bool RBTree<T>::deleteOneElementTree(const T& element)
+{
+    if (root_->element_ == element) {
+        delete root_;
+        root_ = nullptr;
+        --size_;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template<typename T>
+void RBTree<T>::deleteLeaf(Node* deletee)
+{
+    Node* parent = deletee->parent_;
+    bool simpleRebalance = false;
+    if (parent->isRed_ || deletee->isRed_) {
+        simpleRebalance = true;
+        parent->isRed_ = false;
+    }
+    if (deletee->element_ < parent->element_) {
+        delete parent->left_;
+        parent->left_ = nullptr;
+    } else if (deletee->element_ > parent->element_) {
+        delete parent->right_;
+        parent->right_ = nullptr;
+    } 
+    // if the deletee is equal to its parent (can happen when deleting root)
+    else {
+        if (parent->right_ == nullptr) {
+            delete parent->left_;
+            parent->left_ = nullptr;
+        } else {
+            delete parent->right_;
+            parent->right_ = nullptr;
+        }
+    }
+    if (!simpleRebalance){
+        rebalanceAfterDelete(parent);
+    }
+    --size_;
+}
+
+template<typename T>
+void RBTree<T>::deleteStick(Node* deletee, bool deleteLeft)
+{
+    bool simpleRebalance = false;
+    Node* newChild;
+    // find the element to delete's child
+    if (deletee->left_ == nullptr) {
+        newChild = deletee->right_;
+    } else {
+        newChild = deletee->left_;
+    }
+    // if the node to delete was the left child of the parent, make the
+    // node's child its parent's left node
+    if (deleteLeft) {
+        deletee->parent_->left_ = newChild;
+    } else {
+        // otherwise make the node child its parent's right child
+        deletee->parent_->right_ = newChild;
+    }
+    newChild->parent_ = deletee->parent_;
+    // set the deletee's children to nullptr so we don't delete any more nodes
+    // when deleting the deletee
+    deletee->left_ = nullptr;
+    deletee->right_ = nullptr;
+    delete deletee;
+    rebalanceAfterDelete(newChild->parent_);
+    --size_;
+}
+
+template<typename T>
+void RBTree<T>::deleteTwoChildNode(Node* deletee)
+{
+    // replace the node to delete with the next node, then delete that
+    // replacement's old node location
+    Node* newNode = getNextNode(deletee);
+    deletee->element_ = newNode->element_;
+    // if the old node's location is a leaf, delete it as a leaf
+    if (newNode->left_ == nullptr && newNode->right_ == nullptr){
+        deleteLeaf(newNode);
+    }
+    // otherwise it must be a stick, so delete it as a stick
+    else {
+        deleteStick(newNode, newNode->parent_->left_ == newNode);
+    }
+}
+
+template<typename T>
+void RBTree<T>::rebalanceAfterDelete(Node* here)
+{
+    
+}
+
+//   right rotation:
 //      d            b
 //     / \          / \
 //    b   E  ->    A   d
@@ -414,9 +444,14 @@ void RBTree<T>::rightRotate(Node* top)
             newRoot->parent_->right_ = newRoot;
         }
     }
-    top = newRoot;                    // top is now b
+    newRoot->isRed_ = false;
+    newRoot->right_->isRed_ = true;
+    if (newRoot->left_ != nullptr) {
+        newRoot->left_->isRed_ = true;
+    }
 }
 
+//   left rotation:
 //      b               d
 //     / \             / \
 //    A   d     ->    b   E
@@ -445,79 +480,11 @@ void RBTree<T>::leftRotate(Node* top)
             newRoot->parent_->right_ = newRoot;
         }
     }
-    top = newRoot;                    // top is now d 
-}
-
-template<typename T>
-bool RBTree<T>::insertNode(Node*& here, const T& element)
-{
-    // if we have an empty tree, make a new node
-    if (here == nullptr) {
-        here = new Node(element, nullptr, nullptr, nullptr);
-        return true;
+    newRoot->isRed_ = false;
+    newRoot->left_->isRed_ = true;
+    if (newRoot->right_ != nullptr) {
+        newRoot->right_->isRed_ = true;
     }
-    // otherwise go down to the next level in the tree
-    else if (element < here->element_) {
-        if (here->left_ == nullptr) {
-            here->left_ = new Node(element, nullptr, nullptr, here);
-            //here->updateBalance);
-            here->updateBalance();
-            checkBalanced(here->parent_);
-            //splayToRoot(here->left_);
-            return true;
-        } else {
-            return insertNode(here->left_, element);
-        }
-    } else if (element > here->element_) {
-        if (here->right_ == nullptr) {
-            here->right_ = new Node(element, nullptr, nullptr, here);
-            here->updateBalance();
-            checkBalanced(here->parent_);
-            //splayToRoot(here->right_);
-            return true;
-        } else {
-            return insertNode(here->right_, element);
-        }
-    } 
-    // if we aren't less than or greater than the element, we must be equal
-    // and thus we can't insert
-    else {
-        return false;
-    }
-}
-
-template<typename T>
-size_t RBTree<T>::subtreeHeight(Node* here) const
-{
-    // recursive base case
-    if (here == nullptr) {
-        return 0;
-    }
-    // recursively get the left and right subtree heights
-    size_t leftSize = subtreeHeight(here->left_);
-    size_t rightSize = subtreeHeight(here->right_);
-
-    // the taller of the two subtrees is the height of the overall subtree
-    return 1 + std::max(leftSize, rightSize);
-}
-
-template<typename T>
-bool RBTree<T>::isBalanced()
-{
-    return isBalancedNode(root_);
-}
-
-template<typename T>
-bool RBTree<T>::isBalancedNode(Node* here)
-{
-    if (here == nullptr) {
-        return true;
-    }
-    here->updateBalance();
-    if (std::abs(here->balance_) > 1) {
-        return false;
-    }
-    return isBalancedNode(here->left_) && isBalancedNode(here->right_);
 }
 
 template<typename T>
@@ -531,6 +498,7 @@ template <typename T>
 std::ostream& RBTree<T>::print(std::ostream& out) const
 {
     printPretty(root_, 1, 1, out);
+    out << WHITE;
     return out;
 }
 
@@ -538,13 +506,11 @@ template<typename T>
 typename RBTree<T>::iterator RBTree<T>::begin() const
 {
     Node* current = root_;
-    std::stack<Node*> parents;
     // if tree is empty, we don't want to dereference current
     if (current == nullptr) {
         return Iterator(current);
     }
     while (current->left_ != nullptr) {
-        parents.push(current);
         current = current->left_;
     }
     return Iterator(current);
@@ -553,17 +519,21 @@ typename RBTree<T>::iterator RBTree<T>::begin() const
 template<typename T>
 typename RBTree<T>::iterator RBTree<T>::end() const
 {
-    std::stack<Node*> parents;
     return Iterator(nullptr);
 }
 
 // --------------------------------------
+//
 // Implementation of Pretty Print
+// (taken from http://articles.leetcode.com/2010/09/how-to-pretty-print-binary-tree.html)
+//
 // --------------------------------------
+
 template<typename T>
 // Print the arm branches (eg, /    \ ) on a line
 void RBTree<T>::printBranches(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
+  out << WHITE;
   for (int i = 0; i < nodesInThisLevel / 2; i++) {  
     out << ((i == 0) ? std::setw(startLen-1) : std::setw(nodeSpaceLen-2)) << "" << ((*iter++) ? "/" : " ");
     out << std::setw(2*branchLen+2) << "" << ((*iter++) ? "\\" : " ");
@@ -587,9 +557,17 @@ void RBTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, int no
     } else {
         parent = "-";
     }*/
+    if (*iter != nullptr) {
+        if ((*iter)->isRed_) {
+            out << RED;
+        } else {
+            out << WHITE;
+        }
+    }
     out << std::setw(branchLen+2) << ((*iter) ? std::to_string((*iter)->element_) : "");// + ":" + std::to_string((*iter)->balance_) : "");
     out << ((*iter && (*iter)->right_) ? std::setfill('_') : std::setfill(' ')) << std::setw(branchLen) << "" << std::setfill(' ');
   }
+  out << WHITE;
   out << std::endl;
 }
 
@@ -598,8 +576,16 @@ template<typename T>
 void RBTree<T>::printLeaves(int indentSpace, int level, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
   for (int i = 0; i < nodesInThisLevel; i++, iter++) {
+    if (*iter != nullptr) {
+        if ((*iter)->isRed_) {
+            out << RED;
+        } else {
+            out << WHITE;
+        }
+    }
     out << ((i == 0) ? std::setw(indentSpace+2) : std::setw(2*level+2)) << ((*iter) ? std::to_string((*iter)->element_) : "");// + ":" + std::to_string((*iter)->balance_) : "");
   }
+  out << WHITE;
   out << std::endl;
 }
 
@@ -643,11 +629,13 @@ void RBTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostream
 }
 
 // --------------------------------------
+//
 // Implementation of RBTree::Node
+//
 // --------------------------------------
 template<typename T>
-RBTree<T>::Node::Node(const T& element, Node* left, Node* right, Node* parent)
-    :element_{element}, left_{left}, right_{right}, parent_{parent}, balance_{0}
+RBTree<T>::Node::Node(const T& element, Node* left, Node* right, Node* parent, bool isRed)
+    :element_{element}, left_{left}, right_{right}, parent_{parent}, isRed_{isRed}, isDoubleBlack_{false}
 {
     // nothing else to do
 }
@@ -674,20 +662,6 @@ size_t RBTree<T>::Node::size() const
 }
 
 template<typename T>
-void RBTree<T>::Node::updateBalance()
-{
-    int leftHeight = 0;
-    if (left_ != nullptr) {
-        leftHeight = left_->subtreeHeight();
-    } 
-    int rightHeight = 0;
-    if (right_ != nullptr) {
-        rightHeight = right_->subtreeHeight();
-    }
-    balance_ = rightHeight - leftHeight;
-}
-
-template<typename T>
 size_t RBTree<T>::Node::subtreeHeight() const
 {
     // recursive base case (at a leaf)
@@ -703,35 +677,104 @@ size_t RBTree<T>::Node::subtreeHeight() const
     if (right_ != nullptr) {
         rightSize = right_->subtreeHeight();
     }
-
     // the taller of the two subtrees is the height of the overall subtree
     return 1 + std::max(leftSize, rightSize);
 }
 
 template<typename T>
-std::ostream& RBTree<T>::Node::print(std::ostream& out) const
+bool RBTree<T>::Node::hasOneChild() const
 {
-        out << "(";
-    if (left_ == nullptr) {
-        out << "-";
-    } else {
-        left_->print(out);
-    }
+    return left_ == nullptr ^ right_ == nullptr;
+}
 
-    out << ", " << element_ << ", ";
-
-    if (right_ == nullptr) {
-        out << "-";
-    } else {
-        right_->print(out);
+template<typename T>
+bool RBTree<T>::Node::isThreeNode() const
+{
+    bool leftRed = false;
+    bool rightRed = false;
+    if (left_ != nullptr) {
+        leftRed = left_->isRed_;
     }
-    out << ")";
-    return out;
+    if (right_ != nullptr) {
+        rightRed = right_->isRed_;
+    }
+    return !isRed_ && leftRed && rightRed;
+}
+
+template<typename T>
+void RBTree<T>::Node::pushUp()
+{
+    isRed_ = false;
+    if (left_ != nullptr) {
+        left_->isRed_ = false;
+    }
+    if (right_ != nullptr) {
+        right_->isRed_ = false;
+    }
+}
+
+template<typename T>
+void RBTree<T>::Node::makeThreeNode()
+{
+    isRed_ = false;
+    if (left_ != nullptr) {
+        left_->isRed_ = true;
+    }
+    if (right_ != nullptr) {
+        right_->isRed_ = true;
+    }
+}
+
+template<typename T>
+bool RBTree<T>::Node::hasRBProperties()
+{
+    if (isRed_) {
+        if (left_ != nullptr) {
+            if (left_->isRed_) {
+                return false;
+            }
+        }
+        if (right_ != nullptr) {
+            if (right_->isRed_) {
+                return false;
+            }
+        }
+    }
+    size_t leftBlacks = 0;
+    size_t rightBlacks = 0;
+    if (left_ != nullptr) {
+        leftBlacks = left_->numBlackNodes();
+    }
+    if (right_ != nullptr) {
+        rightBlacks = right_->numBlackNodes();
+    }
+    return leftBlacks == rightBlacks;
+}
+
+template<typename T>
+size_t RBTree<T>::Node::numBlackNodes()
+{
+    size_t leftNodes = 0;
+    size_t rightNodes = 0;
+    if (left_ != nullptr) {
+        leftNodes = left_->numBlackNodes();
+    }
+    if (right_ != nullptr) {
+        rightNodes = right_->numBlackNodes();
+    }
+    if (isRed_) {
+        return std::max(leftNodes, rightNodes);
+    } else {
+        return 1 + std::max(leftNodes, rightNodes);
+    }
 }
 
 // --------------------------------------
+//
 // Implementation of RBTree::Iterator
+//
 // --------------------------------------
+
 template<typename T>
 RBTree<T>::Iterator::Iterator(Node* index)
     : current_{index}
@@ -800,6 +843,67 @@ typename RBTree<T>::Iterator& RBTree<T>::Iterator::operator++()
             current_ = current_->parent_;
         } 
         // if we were at the last element, return the equivalent of the end()
+        else {
+            current_ = nullptr;
+        }
+    }
+    return *this;
+}
+
+template<typename T>
+typename RBTree<T>::Iterator& RBTree<T>::Iterator::operator--()
+{
+    // maybe something to handle -- on end()?
+
+    bool firstElement = false;
+    // empty tree
+    if (current_ == nullptr) {
+        return *this;
+    }
+    // tree of size 1
+    else if (current_->left_ == nullptr && current_->right_ == nullptr && current_->parent_ == nullptr) {
+        current_ = nullptr;
+        //return *this;
+    }
+    // if there is something to the left, we go there and then go to the right
+    // as far as we can
+    else if (current_->left_ != nullptr) {
+        current_ = current_->left_;
+        while (current_->right_ != nullptr) {
+            current_ = current_->right_;
+        }
+    }
+    // nothing to the left and at the root node, which means we are at the
+    // first element in the tree
+    else if (current_->left_ == nullptr && current_->parent_ == nullptr) {
+        current_ = nullptr;
+        //return *this;
+    }
+    // at this point we must go back up the tree to get to the next smallest 
+    // value
+    // if stepping back up to the parent gives us a smaller value, then we stop
+    else if (current_->parent_->element_ < current_->element_) {
+        current_ = current_->parent_;
+    }
+    // if stepping back up to the parent gives us a larger value, then we keep
+    // going up until we hit a smaller value
+    else if (current_->parent_->element_ > current_->element_) {
+        while (current_->parent_->element_ > current_->element_) {
+            // step up to the parent of the current node
+            current_ = current_->parent_;
+            // if we have stepped all the way up to the root node and it is
+            // less than the current node, we must have been coming from the
+            // largest element, and thus we are at the end
+            if (current_->parent_ == nullptr) {
+                firstElement = true;
+                break;
+            }
+        }
+        // one more pop to get to the element that is greater than the current one
+        if (!firstElement) {
+            current_ = current_->parent_;
+        } 
+        // if we were at the first element, return null (-- on begin())
         else {
             current_ = nullptr;
         }
