@@ -157,6 +157,7 @@ TEST(splayTreeIntTest, deleteElementTests) {
     EXPECT_FALSE(intTree.contains(0));
     ASSERT_EQ(intTree.size(), 4);
     ASSERT_EQ(deleted, true);
+
     // put 0 back in the tree
     intTree.insert(0);
     for (int i = 0; i < 5; ++i) {
@@ -167,6 +168,7 @@ TEST(splayTreeIntTest, deleteElementTests) {
         EXPECT_TRUE(deleted);
         ASSERT_EQ(intTree.size(), 4 - i);
     }
+
 
     for (int i = 0; i < 200; ++i) {
         intTree.insert(i);

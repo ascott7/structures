@@ -40,7 +40,7 @@ TEST(avlTreeIntTest, insertTests)
         EXPECT_TRUE(intTree.isBalanced());
     }
     EXPECT_TRUE(intTree.height() < 8);
-    //intTree.print(std::cout);
+    intTree.print(std::cout);
 
     AvlTree<int> intTree2;
     for (int i = 0; i < 50; ++i) {
@@ -50,7 +50,7 @@ TEST(avlTreeIntTest, insertTests)
         EXPECT_TRUE(intTree2.contains(intToInsert));
         EXPECT_TRUE(intTree.isBalanced());
     }
-    //intTree2.print(std::cout);
+    intTree2.print(std::cout);
 }
 
 TEST(avlTreeIntTest, basicEqualityTests)
