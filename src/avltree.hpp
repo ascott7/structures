@@ -161,11 +161,13 @@ public:
 
 private:
     struct Node {
-        T element_;     ///> the element at this node
-        Node* left_;    ///> this node's left child
-        Node* right_;   ///> this node's right child
-        Node* parent_;  ///> this node's parent
-        int balance_;   ///> this node's balance (height of left subtree - right)
+        T element_;          ///> the element at this node
+        Node* left_;         ///> this node's left child
+        Node* right_;        ///> this node's right child
+        Node* parent_;       ///> this node's parent
+        int balance_;        ///> this node's balance (height of left subtree - right)
+        size_t leftHeight_;  ///> this node's right subtree's height
+        size_t rightHeight_; ///> this node's left subtree's height
         /**
         * \brief Node constructor
         *

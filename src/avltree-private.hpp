@@ -160,6 +160,7 @@ bool AvlTree<T>::insertNode(Node*& here, const T& element)
     }
     // otherwise go down to the next level in the tree
     else if (element < here->element_) {
+        ++here->leftHeight_;
         if (here->left_ == nullptr) {
             here->left_ = new Node(element, nullptr, nullptr, here);
             here->updateBalance();
@@ -169,6 +170,7 @@ bool AvlTree<T>::insertNode(Node*& here, const T& element)
             return insertNode(here->left_, element);
         }
     } else if (element > here->element_) {
+        ++here->rightHeight_;
         if (here->right_ == nullptr) {
             here->right_ = new Node(element, nullptr, nullptr, here);
             here->updateBalance();
@@ -577,7 +579,8 @@ void AvlTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostrea
 // --------------------------------------
 template<typename T>
 AvlTree<T>::Node::Node(const T& element, Node* left, Node* right, Node* parent)
-    :element_{element}, left_{left}, right_{right}, parent_{parent}, balance_{0}
+    :element_{element}, left_{left}, right_{right}, parent_{parent}, balance_{0},
+    leftHeight_{0}, rightHeight_{0}
 {
     // nothing else to do
 }
@@ -606,15 +609,15 @@ size_t AvlTree<T>::Node::size() const
 template<typename T>
 void AvlTree<T>::Node::updateBalance()
 {
-    int leftHeight = 0;
+    /*int leftHeight = 0;
     if (left_ != nullptr) {
         leftHeight = left_->subtreeHeight();
     } 
     int rightHeight = 0;
     if (right_ != nullptr) {
         rightHeight = right_->subtreeHeight();
-    }
-    balance_ = rightHeight - leftHeight;
+    }*/
+    balance_ = rightHeight_ - leftHeight_;
 }
 
 template<typename T>
