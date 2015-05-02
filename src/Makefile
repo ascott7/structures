@@ -67,8 +67,8 @@ rbtree-test: rbtree-test.o otter.o
 
 # ----- Dependencies -----
 otter.o: otter.cpp otter.hpp
-linkedlist-test.o: linkedlist-test.cpp
-randomtree-test.o: randomtree-test.cpp
-splaytree-test.o: splaytree-test.cpp
-avltree-test.o: avltree-test.cpp
-rbtree-test.o: rbtree-test.cpp
+linkedlist-test.o: linkedlist-test.cpp linkedlist.hpp linkedlist-private.hpp
+randomtree-test.o: randomtree-test.cpp randomtree.hpp randomtree-private.hpp
+splaytree-test.o: splaytree-test.cpp splaytree.hpp splaytree-private.hpp
+avltree-test.o: avltree-test.cpp avltree.hpp avltree-private.hpp
+rbtree-test.o: rbtree-test.cpp rbtree.hpp rbtree-private.hpp
