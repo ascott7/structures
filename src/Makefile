@@ -32,7 +32,7 @@ test: $(TARGETS)
 	./linkedlist-test
 	./randomtree-test
 	./splaytree-test
-	./avltree-test
+#	./avltree-test
 	./rbtree-test
 
 linkedlist: linkedlist-test
