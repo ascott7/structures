@@ -16,8 +16,8 @@
 #include <stdlib.h>     // rand(), srand()
 #include <stack>        // std::stack
 #include <list>
- #include <iomanip>
- #include <cmath>
+#include <iomanip>
+#include <cmath>
 
 template <typename T>
 
@@ -132,7 +132,7 @@ public:
     */
     bool empty();
 
-        /**
+    /**
      * \brief
      * Prints the tree in a readable form
      *
@@ -159,11 +159,14 @@ private:
         Node* left_;   ///> this node's left child
         Node* right_;  ///> this node's right child
         Node* parent_; ///> this node's parent
+        size_t size_;  ///> this node's size
+
         /**
         * \brief Node constructor
         *
         */
         Node(const T& element, Node* left, Node* right, Node* parent);
+        
         /**
         * \brief default destructor
         *
@@ -174,16 +177,7 @@ private:
         * \brief Size function
         * \returns the size of this node (sum of its children's size)
         */
-        size_t size() const;
-
-        //bool operator==(const RandomTree::Node& rhs) const;
-
-        /**
-        * \brief Print a node
-        * \param out An output stream to print to
-        * \returns the output stream with the node printed to it
-        */
-        std::ostream& print(std::ostream& out) const;
+        //size_t size() const;
 
         Node() = delete; // disable default constructor
         Node& operator=(const Node&) = delete; // disable assignment operator
@@ -196,9 +190,13 @@ private:
     *
     */
     void printPretty(Node* root, int level, int indentSpace, std::ostream& out) const;
-    void printLeaves(int indentSpace, int level, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const;
-    void printNodes(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const;
-    void printBranches(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const;
+    void printLeaves(int indentSpace, int level, int nodesInThisLevel, 
+        const std::deque<Node*>& nodesQueue, std::ostream& out) const;
+    void printNodes(int branchLen, int nodeSpaceLen, int startLen, 
+        int nodesInThisLevel, const std::deque<Node*>& nodesQueue,
+         std::ostream& out) const;
+    void printBranches(int branchLen, int nodeSpaceLen, int startLen,
+     int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const;
 
     /**
      * \brief
@@ -217,6 +215,20 @@ private:
      * 
      */
     void leftRotate(Node* top);
+
+    /**
+     * \brief
+     * Fixes the sizes of relevant nodes after right rotation
+     * 
+     */
+    void fixSizeRightRotate(Node* here);
+
+    /**
+     * \brief
+     * Fixes the sizes of relevant nodes after left rotation
+     * 
+     */
+    void fixSizeLeftRotate(Node* here);
 
 
     /**
@@ -256,12 +268,6 @@ private:
     *
     */
     size_t subtreeHeight(Node* here) const;
-
-    /**
-    * \brief deletes the root element
-    *
-    */
-    void deleteRoot();
 
     /**
     * \brief deletes a leaf

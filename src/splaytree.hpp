@@ -255,12 +255,6 @@ private:
     void splayToRoot(Node* newRoot);
 
     /**
-    * \brief deletes the root element
-    *
-    */
-    void deleteRoot();
-
-    /**
     * \brief deletes a leaf
     *
     */

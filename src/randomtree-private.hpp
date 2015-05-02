@@ -159,23 +159,33 @@ bool RandomTree<T>::insertNode(Node*& here, const T& element)
         return true;
     } 
     // random check to insert at current node
-    if (rand() % here->size() == 0) {
+    if (rand() % here->size_ == 0) {
         return insertNodeAtRoot(here, element);
     } 
     // otherwise go down to the next level in the tree
     else if (element < here->element_) {
         if (here->left_ == nullptr) {
+            ++here->size_;
             here->left_ = new Node(element, nullptr, nullptr, here);
             return true;
         } else {
-            return insertNode(here->left_, element);
+            if (insertNode(here->left_, element)) {
+                ++here->size_;
+                return true;
+            }
+            return false;
         }
     } else if (element > here->element_) {
         if (here->right_ == nullptr) {
+            ++here->size_;
             here->right_ = new Node(element, nullptr, nullptr, here);
             return true;
         } else {
-            return insertNode(here->right_, element);
+            if (insertNode(here->right_, element)) {
+                ++here->size_;
+                return true;
+            }
+            return false;
         }
     } 
     // if we aren't less than or greater than the element, we must be equal
@@ -369,6 +379,7 @@ void RandomTree<T>::deleteTwoChildNode(Node* deletee)
 template <typename T> 
 void RandomTree<T>::rightRotate(Node* top)
 {
+    fixSizeRightRotate(top);
     Node* newRoot = top->left_;          // b is d's left child
     // if C exists, we need to change it's parent to be d
     if (newRoot->right_ != nullptr) {
@@ -400,6 +411,7 @@ void RandomTree<T>::rightRotate(Node* top)
 template <typename T> 
 void RandomTree<T>::leftRotate(Node* top) 
 {
+    fixSizeLeftRotate(top);
     Node* newRoot = top->right_;      // d is b's right child
     // if C exists, we need to change it's parent to be b
     if (newRoot->left_ != nullptr) {
@@ -422,7 +434,22 @@ void RandomTree<T>::leftRotate(Node* top)
     }
 }
 
+template <typename T> 
+void RandomTree<T>::fixSizeRightRotate(Node* here)
+{
+    size_t hereSize = here->size_;
+    here->size_ = here->right_->size_ + here->left_->right_->size_;
+    here->left_->size_ = hereSize;
+}
 
+
+template <typename T> 
+void RandomTree<T>::fixSizeLeftRotate(Node* here)
+{
+    size_t hereSize = here->size_;
+    here->size_ = here->left_->size_ + here->right_->left_->size_;
+    here->right_->size_ = hereSize;
+}
 
 template<typename T>
 std::ostream& RandomTree<T>::printStatistics(std::ostream& out) const
@@ -556,7 +583,7 @@ void RandomTree<T>::printPretty(Node* root, int level, int indentSpace, std::ost
 // --------------------------------------
 template<typename T>
 RandomTree<T>::Node::Node(const T& element, Node* left, Node* right, Node* parent)
-    :element_{element}, left_{left}, right_{right}, parent_{parent}
+    :element_{element}, left_{left}, right_{right}, parent_{parent}, size_{1}
 {
     // nothing else to do
 }
@@ -568,19 +595,11 @@ RandomTree<T>::Node::~Node()
     delete right_;
 }
 
-template<typename T>
-size_t RandomTree<T>::Node::size() const
-{
-    size_t size = 1;
-
-    if (left_ != nullptr) {
-        size += left_->size();
-    }
-    if (right_ != nullptr) {
-        size += right_->size();
-    }
-    return size;
-}
+// template<typename T>
+// size_t RandomTree<T>::Node::size() const
+// {
+//     return size_;
+// }
 
 // --------------------------------------
 //
