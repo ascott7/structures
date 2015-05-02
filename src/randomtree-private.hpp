@@ -158,6 +158,7 @@ bool RandomTree<T>::insertNode(Node*& here, const T& element)
         here = new Node(element, nullptr, nullptr, nullptr);
         return true;
     } 
+    //std::cout << "size at " << here->element_ << " is " << here->size_ << std::endl;
     // random check to insert at current node
     if (rand() % here->size_ == 0) {
         return insertNodeAtRoot(here, element);
@@ -442,7 +443,7 @@ template <typename T>
 void RandomTree<T>::fixSizeRightRotate(Node* here)
 {
     size_t hereSize = nodeSize(here);
-    here->size_ = nodeSize(here->right_) + nodeSize(here->left_->right_);
+    here->size_ = nodeSize(here->right_) + nodeSize(here->left_->right_) + 1;
     here->left_->size_ = hereSize;
 }
 
@@ -450,7 +451,7 @@ template <typename T>
 void RandomTree<T>::fixSizeLeftRotate(Node* here)
 {
     size_t hereSize = nodeSize(here);
-    here->size_ = nodeSize(here->left_) + nodeSize(here->right_->left_);
+    here->size_ = nodeSize(here->left_) + nodeSize(here->right_->left_) + 1;
     here->right_->size_ = hereSize;
 }
 
@@ -543,7 +544,7 @@ template<typename T>
 void RandomTree<T>::printLeaves(int indentSpace, int level, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
   for (int i = 0; i < nodesInThisLevel; i++, iter++) {
-    out << ((i == 0) ? std::setw(indentSpace+2) : std::setw(2*level+2)) << ((*iter) ? std::to_string((*iter)->element_) + " " + std::to_string((*iter)->parent_->element_) : "");
+    out << ((i == 0) ? std::setw(indentSpace+2) : std::setw(2*level+2)) << ((*iter) ? std::to_string((*iter)->element_) : "");
   }
   out << std::endl;
 }
