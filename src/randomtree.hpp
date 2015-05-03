@@ -182,7 +182,7 @@ private:
         Node() = delete; // disable default constructor
         Node& operator=(const Node&) = delete; // disable assignment operator
     };
-    size_t size_;
+    //size_t size_;
     Node* root_;
 
     /**

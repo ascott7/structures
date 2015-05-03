@@ -7,7 +7,7 @@
 
 template<typename T>
 RandomTree<T>::RandomTree()
-            : size_{0}, root_{nullptr}
+            : root_{nullptr}
 {
     srand (time(NULL));
 }
@@ -20,7 +20,7 @@ RandomTree<T>::~RandomTree()
 
 template<typename T>
 RandomTree<T>::RandomTree(const RandomTree<T>& orig)
-            : size_{0}, root_{nullptr}
+            : root_{nullptr}
 {
     for (iterator i = orig.begin(); i != orig.end(); ++i) {
         insert(*i);
@@ -40,7 +40,6 @@ void RandomTree<T>::swap(RandomTree<T>& rhs)
 {
     using std::swap;
     swap(root_, rhs.root_);
-    swap(size_, rhs.size_);
 }
 
 template<typename T>
@@ -64,7 +63,7 @@ size_t RandomTree<T>::height() const
 template<typename T>
 bool RandomTree<T>::empty()
 {
-    return (size_ == 0);
+    return root_ == nullptr;
 }
 
 template<typename T>
@@ -144,7 +143,6 @@ template<typename T>
 bool RandomTree<T>::insert(const T& element)
 {
     if (insertNode(root_, element)) {
-        ++size_;
         return true;
     }
     return false;
@@ -158,18 +156,20 @@ bool RandomTree<T>::insertNode(Node*& here, const T& element)
         here = new Node(element, nullptr, nullptr, nullptr);
         return true;
     } 
-    //std::cout << "size at " << here->element_ << " is " << here->size_ << std::endl;
     // random check to insert at current node
     if (rand() % here->size_ == 0) {
         return insertNodeAtRoot(here, element);
     } 
     // otherwise go down to the next level in the tree
     else if (element < here->element_) {
+        // if nothing to the left, insert there
         if (here->left_ == nullptr) {
             ++here->size_;
             here->left_ = new Node(element, nullptr, nullptr, here);
             return true;
-        } else {
+        } 
+        // otherwise go down another level in the tree
+        else {
             if (insertNode(here->left_, element)) {
                 ++here->size_;
                 return true;
@@ -177,11 +177,14 @@ bool RandomTree<T>::insertNode(Node*& here, const T& element)
             return false;
         }
     } else if (element > here->element_) {
+        // if nothing to the right, insert there
         if (here->right_ == nullptr) {
             ++here->size_;
             here->right_ = new Node(element, nullptr, nullptr, here);
             return true;
-        } else {
+        } 
+        // otherwise go down another level in the tree
+        else {
             if (insertNode(here->right_, element)) {
                 ++here->size_;
                 return true;
@@ -242,7 +245,7 @@ bool RandomTree<T>::deleteElement(const T& element)
     if (empty()) {
         return false;
     }
-    if (size_ == 1) {
+    if (nodeSize(root_) == 1) {
         return deleteOneElementTree(element);
     }
     Node* deletee;    // the node to delete
@@ -296,7 +299,6 @@ bool RandomTree<T>::deleteOneElementTree(const T& element)
     if (root_->element_ == element) {
         delete root_;
         root_ = nullptr;
-        --size_;
         return true;
     } else {
         return false;
@@ -324,7 +326,11 @@ void RandomTree<T>::deleteLeaf(Node* deletee)
             parent->right_ = nullptr;
         }
     }
-    --size_;
+    // adjust size values of all the parents
+    while (parent != nullptr) {
+        --parent->size_;
+        parent = parent->parent_;
+    }
 }
 
 template<typename T>
@@ -354,7 +360,12 @@ void RandomTree<T>::deleteStick(Node* deletee, bool deleteLeft)
     deletee->left_ = nullptr;
     deletee->right_ = nullptr;
     delete deletee;
-    --size_;
+    // adjust size values of all the parents
+    Node* parent = newChild->parent_;
+    while (parent != nullptr) {
+        --parent->size_;
+        parent = parent->parent_;
+    }
 }
 
 template<typename T>
@@ -606,12 +617,6 @@ RandomTree<T>::Node::~Node()
     delete left_;
     delete right_;
 }
-
-// template<typename T>
-// size_t RandomTree<T>::Node::size() const
-// {
-//     return size_;
-// }
 
 // --------------------------------------
 //
