@@ -7,7 +7,7 @@
 
 # ----- Make Macros ------
 
-CXXFLAGS = -g -Wall -Wextra -pedantic
+CXXFLAGS = -g -Wall -Wextra -pedantic -O2
 CXX = clang++ -std=c++11
 
 TARGETS = linkedlist-test randomtree-test splaytree-test avltree-test \
@@ -16,7 +16,6 @@ TARGETS = linkedlist-test randomtree-test splaytree-test avltree-test \
 # http://stackoverflow.com/questions/20746232/how-to-properly-setup-googletest
 # -on-os-x-aside-from-xcode
 GTEST_LIB =	-lgtest -lgtest_main
-BENCH_OBJECTS = bench.o 
 export MAKEFLAGS="-j 8
 
 
@@ -28,12 +27,16 @@ all: $(TARGETS)
 clean:
 	rm -f *.o $(TARGETS)
 
-test: $(TARGETS)
+test: $(TARGETS) bench
 	./linkedlist-test
 	./randomtree-test
 	./splaytree-test
 #	./avltree-test
-	./rbtree-test
+#	./rbtree-test
+	./bench
+
+bench: bench.cpp $(TARGETS)
+	$(CXX) $(CXXFLAGS) -o $@ bench.cpp
 
 linkedlist: linkedlist-test
 	./linkedlist-test
