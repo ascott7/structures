@@ -62,7 +62,7 @@ size_t SplayTree<T>::height() const
 }
 
 template<typename T>
-bool SplayTree<T>::empty()
+bool SplayTree<T>::empty() const
 {
     return (size_ == 0);
 }
@@ -111,7 +111,7 @@ size_t SplayTree<T>::subtreeHeight(Node* here) const
 }
 
 template<typename T>
-bool SplayTree<T>::contains(const T& element)
+bool SplayTree<T>::contains(const T& element) const
 {
     Node* elementNode = findNode(root_, element);
     if (elementNode == nullptr) {
@@ -123,7 +123,7 @@ bool SplayTree<T>::contains(const T& element)
 }
 
 template<typename T>
-typename SplayTree<T>::Node* SplayTree<T>::findNode(Node* here, const T& element)
+typename SplayTree<T>::Node* SplayTree<T>::findNode(Node* here, const T& element) const
 {
     if (here == nullptr) {
         return nullptr;
@@ -188,7 +188,7 @@ bool SplayTree<T>::insertNode(Node*& here, const T& element)
 }
 
 template<typename T>
-void SplayTree<T>::splayToRoot(Node* newRoot)
+void SplayTree<T>::splayToRoot(Node* newRoot) const
 {
     // base case (we are at the root)
     if (newRoot->parent_ == nullptr) {
@@ -370,7 +370,7 @@ void SplayTree<T>::deleteTwoChildNode(Node* deletee)
 //   / \              / \
 //  A   C            C   E
 template <typename T> 
-void SplayTree<T>::rightRotate(Node* top)
+void SplayTree<T>::rightRotate(Node* top) const
 {
     Node* newRoot = top->left_;          // b is d's left child
     // if C exists, we need to change it's parent to be d
@@ -402,7 +402,7 @@ void SplayTree<T>::rightRotate(Node* top)
 //       / \         / \
 //      C   E       A   C
 template <typename T> 
-void SplayTree<T>::leftRotate(Node* top) 
+void SplayTree<T>::leftRotate(Node* top) const
 {
     Node* newRoot = top->right_;      // d is b's right child
     // if C exists, we need to change it's parent to be b
