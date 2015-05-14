@@ -4,3 +4,5 @@ randomtree-test
 splaytree-test
 avltree-test
 rbtree-test
+bench
+.DS_Store
