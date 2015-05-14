@@ -9,6 +9,7 @@
 
 #ifndef AVL_TREE_INCLUDED
 #define AVL_TREE_INCLUDED 1
+#include "abstracttree.hpp"
 #include <cstddef>
 #include <cassert>
 #include <iostream>
@@ -26,7 +27,7 @@ template <typename T>
 * \brief A templated random tree
 */
 
-class AvlTree {
+class AvlTree : public AbstractTree<T>{
 
 private:
    class Iterator; // Forward declaration1

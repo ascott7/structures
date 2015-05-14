@@ -9,6 +9,7 @@
 
 #ifndef SPLAY_TREE_INCLUDED
 #define SPLAY_TREE_INCLUDED 1
+#include "abstracttree.hpp"
 #include <cstddef>
 #include <cassert>
 #include <iostream>
@@ -26,7 +27,7 @@ template <typename T>
 * \brief A templated random tree
 */
 
-class SplayTree {
+class SplayTree : public AbstractTree<T> {
 
 private:
    class Iterator; // Forward declaration1
@@ -110,7 +111,7 @@ public:
     * Checks if an element is in the tree
     *
     */
-    bool contains(const T& element);
+    bool contains(const T& element) const;
 
     /**
     * \brief
@@ -130,7 +131,7 @@ public:
     * \brief
     * returns true if the tree is empty, false otherwise
     */
-    bool empty();
+    bool empty() const;
 
         /**
      * \brief
@@ -180,7 +181,7 @@ private:
         Node& operator=(const Node&) = delete; // disable assignment operator
     };
     size_t size_;
-    Node* root_;
+    mutable Node* root_;
 
     /**
     * \brief pretty prints the tree
@@ -198,7 +199,7 @@ private:
      * \param top The node to rotate about
      * 
      */
-    void rightRotate(Node* top);
+    void rightRotate(Node* top) const;
 
     /**
      * \brief
@@ -207,7 +208,7 @@ private:
      * \param top The node to rotate about
      * 
      */
-    void leftRotate(Node* top);
+    void leftRotate(Node* top) const;
 
 
     /**
@@ -238,7 +239,7 @@ private:
      *
      * \returns True if the element is present in the tree, false if otherwise
      */
-    Node* findNode(Node* here, const T& element);
+    Node* findNode(Node* here, const T& element) const;
 
     Node* getNextNode(Node* here);
 
@@ -252,7 +253,7 @@ private:
     * \brief splays the specified element to the root of the tree
     *
     */
-    void splayToRoot(Node* newRoot);
+    void splayToRoot(Node* newRoot) const;
 
     /**
     * \brief deletes a leaf

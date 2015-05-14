@@ -9,6 +9,7 @@
 
 #ifndef RB_TREE_INCLUDED
 #define RB_TREE_INCLUDED 1
+#include "abstracttree.hpp"
 #include <cstddef>
 #include <cassert>
 #include <iostream>
@@ -32,7 +33,7 @@ template <typename T>
 * \brief A templated random tree
 */
 
-class RBTree {
+class RBTree : public AbstractTree<T>{
 
 private:
    class Iterator; // Forward declaration1
@@ -107,7 +108,6 @@ public:
     * \returns
     * true if the element was deleted, false otherwise
     *
-    * \note log(n) time
     */
     bool deleteElement(const T& element);
 
