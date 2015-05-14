@@ -9,7 +9,7 @@ template<typename T>
 RandomTree<T>::RandomTree()
             : root_{nullptr}
 {
-    srand (time(NULL));
+    //srand (time(NULL));
 }
 
 template<typename T>
@@ -157,7 +157,8 @@ bool RandomTree<T>::insertNode(Node*& here, const T& element)
         return true;
     } 
     // random check to insert at current node
-    if (rand() % here->size_ == 0) {
+    //if (rand() % here->size_ == 0) {
+    if (rng(here->size_) == 0) {
         return insertNodeAtRoot(here, element);
     } 
     // otherwise go down to the next level in the tree
@@ -544,7 +545,7 @@ void RandomTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, in
     } else {
         parent = "-";
     }
-    out << std::setw(branchLen+2) << ((*iter) ? std::to_string((*iter)->element_) + " " + parent : "");
+    out << std::setw(branchLen+2) << ((*iter) ? std::to_string((*iter)->element_) : "");
     out << ((*iter && (*iter)->right_) ? std::setfill('_') : std::setfill(' ')) << std::setw(branchLen) << "" << std::setfill(' ');
   }
   out << std::endl;

@@ -9,13 +9,14 @@
 
 #ifndef RANDOM_TREE_INCLUDED
 #define RANDOM_TREE_INCLUDED 1
-#include <cstddef>
-#include <cassert>
-#include <iostream>
+#include "abstracttree.hpp"
+#include "pcg-cpp-0.98/include/pcg_random.hpp"
+//#include <cstddef>
+//#include <cassert>
+//#include <iostream>
 #include <time.h>       // time
-#include <stdlib.h>     // rand(), srand()
-#include <stack>        // std::stack
-#include <list>
+#include <stack>        // std::queue
+//#include <list>
 #include <iomanip>
 #include <cmath>
 
@@ -26,7 +27,7 @@ template <typename T>
 * \brief A templated random tree
 */
 
-class RandomTree {
+class RandomTree : public AbstractTree<T> {
 
 private:
    class Iterator; // Forward declaration1
@@ -80,7 +81,7 @@ public:
     *
     * \returns the number of elements in the tree
     */
-    size_t size() const;
+    size_t size() const override;
 
     /**
     * \brief Determines the height of the tree
@@ -92,7 +93,7 @@ public:
     * Inserts an element into the tree
     *
     */
-    bool insert(const T& element);
+    bool insert(const T& element) override;
 
     /**
     * \brief 
@@ -103,14 +104,14 @@ public:
     *
     * \note log(n) time
     */
-    bool deleteElement(const T& element);
+    bool deleteElement(const T& element) override;
 
     /**
     * \brief 
     * Checks if an element is in the tree
     *
     */
-    bool contains(const T& element) const;
+    bool contains(const T& element) const override;
 
     /**
     * \brief
@@ -184,6 +185,7 @@ private:
     };
     //size_t size_;
     Node* root_;
+    pcg32_k64 rng;
 
     /**
     * \brief pretty prints the tree
