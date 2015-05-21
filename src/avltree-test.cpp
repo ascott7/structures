@@ -20,12 +20,14 @@
 TEST(avlTreeIntTest, insertTests)
 {
     AvlTree<int> intTree;
+    srand(1);
     int test = 0;
     EXPECT_FALSE(intTree.contains(test));
     bool inserted = intTree.insert(test);
     EXPECT_TRUE(intTree.contains(test));
     EXPECT_TRUE(intTree.size() == 1);
     EXPECT_TRUE(inserted);
+    //intTree.print(std::cout);
     int test2 = 1;
     inserted = intTree.insert(test2);
     EXPECT_TRUE(intTree.contains(test2));
@@ -34,6 +36,8 @@ TEST(avlTreeIntTest, insertTests)
     // check that inserting again returns false
     EXPECT_FALSE(intTree.insert(test));
     for (int i = 2; i < 63; ++i) {
+        //std::cout << "inserting " << std::to_string(i) << std::endl;
+        //intTree.print(std::cout);
         EXPECT_FALSE(intTree.contains(i));
         intTree.insert(i);
         EXPECT_TRUE(intTree.contains(i));
@@ -43,14 +47,16 @@ TEST(avlTreeIntTest, insertTests)
     intTree.print(std::cout);
 
     AvlTree<int> intTree2;
-    for (int i = 0; i < 50; ++i) {
-        int intToInsert = rand() % 100;
+    for (int i = 0; i < 10000; ++i) {
+        int intToInsert = rand() % 100000;
+        //std::cout << "inserting " << std::to_string(intToInsert) << std::endl;
         //EXPECT_FALSE(intTree2.contains(intToInsert));
         intTree2.insert(intToInsert);
+        //intTree2.print(std::cout);
         EXPECT_TRUE(intTree2.contains(intToInsert));
         EXPECT_TRUE(intTree.isBalanced());
     }
-    intTree2.print(std::cout);
+    //intTree2.print(std::cout);
 }
 
 TEST(avlTreeIntTest, basicEqualityTests)
@@ -154,23 +160,23 @@ TEST(avlTreeIntTest, deleteElementTests) {
     // check that the tree is now empty
     ASSERT_EQ(intTree.size(), 0);
     EXPECT_FALSE(intTree.contains(5));
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 15; ++i) {
         intTree.insert(i);
     }
     // 0 will be a leaf, so we are testing the case where we delete a leaf
     bool deleted = intTree.deleteElement(0);
     EXPECT_FALSE(intTree.contains(0));
-    ASSERT_EQ(intTree.size(), 4);
+    ASSERT_EQ(intTree.size(), 14);
     ASSERT_EQ(deleted, true);
     // put 0 back in the tree
     intTree.insert(0);
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 15; ++i) {
         // check that several deletes work
         EXPECT_TRUE(intTree.contains(i));
         bool deleted = intTree.deleteElement(i);
         EXPECT_FALSE(intTree.contains(i));
         EXPECT_TRUE(deleted);
-        ASSERT_EQ(intTree.size(), 4 - i);
+        ASSERT_EQ(intTree.size(), 14 - i);
     }
 
     for (int i = 0; i < 500; ++i) {
