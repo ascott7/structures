@@ -288,8 +288,8 @@ int main(int argc, const char* argv[])
     runTreeTests(Container::SPLAY_TREE);
 
     // avl tree benchmarks
-    //std::cout << "avl tree benchmarks" << std::endl;
-    //runTreeTests(Container::AVL_TREE);
+    std::cout << "avl tree benchmarks" << std::endl;
+    runTreeTests(Container::AVL_TREE);
 
     // red black tree benchmarks
     std::cout << "red-black tree benchmarks" << std::endl;
