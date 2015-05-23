@@ -166,9 +166,9 @@ private:
         Node* left_;         ///> this node's left child
         Node* right_;        ///> this node's right child
         Node* parent_;       ///> this node's parent
-        int balance_;        ///> this node's balance (height of left subtree - right)
-        size_t leftHeight_;  ///> this node's right subtree's height
-        size_t rightHeight_; ///> this node's left subtree's height
+        int height_;        ///> this node's height
+        //size_t leftHeight_;  ///> this node's right subtree's height
+        //size_t rightHeight_; ///> this node's left subtree's height
         /**
         * \brief Node constructor
         *
@@ -186,9 +186,11 @@ private:
         */
         size_t size() const;
 
-        void updateBalance();
+        int getBalance();
 
-        size_t subtreeHeight() const;
+        void updateHeight();
+
+        //size_t subtreeHeight() const;
 
         Node() = delete; // disable default constructor
         Node& operator=(const Node&) = delete; // disable assignment operator
@@ -256,6 +258,8 @@ private:
 
     Node* getNextNode(Node* here);
 
+    static int nodeHeight(Node* here);
+
     /**
     * \brief returns the height of the subtree with the given node as the root
     *
@@ -286,7 +290,7 @@ private:
     */
     bool deleteOneElementTree(const T& element);
 
-    void checkBalanced(Node* startingNode);
+    void checkBalanced(Node* startingNode, bool afterInsert);
 
     bool isBalancedNode(Node* here);
 

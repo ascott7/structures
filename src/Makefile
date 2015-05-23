@@ -31,7 +31,7 @@ test: $(TARGETS) bench
 	./linkedlist-test
 	./randomtree-test
 	./splaytree-test
-#	./avltree-test
+	./avltree-test
 #	./rbtree-test
 	./twothreefourtree-test
 	./bench

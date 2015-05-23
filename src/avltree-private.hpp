@@ -160,21 +160,23 @@ bool AvlTree<T>::insertNode(Node*& here, const T& element)
     }
     // otherwise go down to the next level in the tree
     else if (element < here->element_) {
-        ++here->leftHeight_;
         if (here->left_ == nullptr) {
             here->left_ = new Node(element, nullptr, nullptr, here);
-            here->updateBalance();
-            checkBalanced(here->parent_);
+            if (here->right_ == nullptr) {
+                ++here->height_;
+            }
+            checkBalanced(here->parent_, true);
             return true;
         } else {
             return insertNode(here->left_, element);
         }
     } else if (element > here->element_) {
-        ++here->rightHeight_;
         if (here->right_ == nullptr) {
             here->right_ = new Node(element, nullptr, nullptr, here);
-            here->updateBalance();
-            checkBalanced(here->parent_);
+            if (here->left_ == nullptr){
+                ++here->height_;
+            }
+            checkBalanced(here->parent_, true);
             return true;
         } else {
             return insertNode(here->right_, element);
@@ -188,44 +190,46 @@ bool AvlTree<T>::insertNode(Node*& here, const T& element)
 }
 
 template<typename T>
-void AvlTree<T>::checkBalanced(Node* startingNode)
+void AvlTree<T>::checkBalanced(Node* startingNode, bool afterInsert)
 {
     if (startingNode == nullptr) {
         return;
     }
-    startingNode->updateBalance();
+
+    startingNode->updateHeight();
+    int balance = startingNode->getBalance();
     // left subtree has height 2 greater than right subtree
-    if (startingNode->balance_ < -1) {
-        int balance = startingNode->left_->balance_;
-        if (balance == 1) {
+    if (balance < -1) {
+        int leftBalance = startingNode->left_->getBalance();
+        if (leftBalance == 1) {
             leftRotate(startingNode->left_);
             rightRotate(startingNode);
         }
-        else if (balance == -1 || balance == 0) {
+        else if (leftBalance == -1 || leftBalance == 0) {
             rightRotate(startingNode);
         }
         if (startingNode->parent_ != nullptr) {
-            startingNode->parent_->updateBalance();
-            checkBalanced(startingNode->parent_);
+            checkBalanced(startingNode->parent_, afterInsert);
         }
     }
     // right subtree has a height 2 greater than left subtree
-    else if (startingNode->balance_ > 1) {
-        int balance = startingNode->right_->balance_;
-        if (balance == -1) {
+    else if (balance > 1) {
+        int rightBalance = startingNode->right_->getBalance();
+        if (rightBalance == -1) {
             rightRotate(startingNode->right_);
             leftRotate(startingNode);
         }
-        else if (balance == 1 || balance == 0) {
+        else if (rightBalance == 1 || rightBalance == 0) {
             leftRotate(startingNode);
         }
         if (startingNode->parent_ != nullptr) {
-            startingNode->parent_->updateBalance();
-            checkBalanced(startingNode->parent_);
+            checkBalanced(startingNode->parent_, afterInsert);
         }
     }
-    else {
-        checkBalanced(startingNode->parent_);
+    else if (balance == 0 && !afterInsert) {
+        checkBalanced(startingNode->parent_, afterInsert);
+    } else if (balance != 0 && afterInsert) {
+        checkBalanced(startingNode->parent_, afterInsert);
     }
 }
 
@@ -316,7 +320,7 @@ void AvlTree<T>::deleteLeaf(Node* deletee)
             parent->right_ = nullptr;
         }
     }
-    checkBalanced(parent);
+    checkBalanced(parent, false);
     --size_;
 }
 
@@ -344,7 +348,7 @@ void AvlTree<T>::deleteStick(Node* deletee, bool deleteLeft)
     deletee->left_ = nullptr;
     deletee->right_ = nullptr;
     delete deletee;
-    checkBalanced(newChild->parent_);
+    checkBalanced(newChild->parent_, false);
     --size_;
 }
 
@@ -384,8 +388,10 @@ void AvlTree<T>::rightRotate(Node* top)
     top->parent_ = newRoot;           // b is d's parent
     newRoot->right_= top;             // d becomes right child of b
     newRoot->parent_ = topParent;     // d's old parent is b's parent
-    newRoot->updateBalance();
-    newRoot->right_->updateBalance();
+
+    top->updateHeight();
+    newRoot->updateHeight();
+    
     // we then need to update the node pointing to our new top
     if (newRoot->parent_ == nullptr) { 
         root_ = newRoot;
@@ -417,8 +423,10 @@ void AvlTree<T>::leftRotate(Node* top)
     top->parent_ = newRoot;           // d is b's parent
     newRoot->left_= top;              // b becomes left child of d
     newRoot->parent_ = topParent;     // b's old parent is d's parent
-    newRoot->updateBalance();
-    newRoot->left_->updateBalance();
+
+    top->updateHeight();
+    newRoot->updateHeight();
+
     // we then need to update the node pointing to our new top
     if (newRoot->parent_ == nullptr) { 
         root_ = newRoot;
@@ -429,6 +437,15 @@ void AvlTree<T>::leftRotate(Node* top)
             newRoot->parent_->right_ = newRoot;
         }
     }
+}
+
+template<typename T>
+int AvlTree<T>::nodeHeight(Node* here)
+{
+    if (here == nullptr) {
+        return -1;
+    }
+    return here->height_;
 }
 
 template<typename T>
@@ -443,11 +460,7 @@ bool AvlTree<T>::isBalancedNode(Node* here)
     if (here == nullptr) {
         return true;
     }
-    here->updateBalance();
-    if (std::abs(here->balance_) > 1) {
-        return false;
-    }
-    return isBalancedNode(here->left_) && isBalancedNode(here->right_);
+    return (std::abs(nodeHeight(here->left_) - nodeHeight(here->right_)) < 2);
 }
 
 template<typename T>
@@ -517,7 +530,7 @@ void AvlTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, int n
     } else {
         parent = "-";
     }*/
-    out << std::setw(branchLen+2) << ((*iter) ? std::to_string((*iter)->element_) : "");// + ":" + std::to_string((*iter)->balance_) : "");
+    out << std::setw(branchLen+2) << ((*iter) ? std::to_string((*iter)->element_)/* + " " + std::to_string((*iter)->height_) */: "");
     out << ((*iter && (*iter)->right_) ? std::setfill('_') : std::setfill(' ')) << std::setw(branchLen) << "" << std::setfill(' ');
   }
   out << std::endl;
@@ -528,7 +541,7 @@ template<typename T>
 void AvlTree<T>::printLeaves(int indentSpace, int level, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
   for (int i = 0; i < nodesInThisLevel; i++, iter++) {
-    out << ((i == 0) ? std::setw(indentSpace+2) : std::setw(2*level+2)) << ((*iter) ? std::to_string((*iter)->element_) : "");// + ":" + std::to_string((*iter)->balance_) : "");
+    out << ((i == 0) ? std::setw(indentSpace+2) : std::setw(2*level+2)) << ((*iter) ? std::to_string((*iter)->element_)/* + " " + std::to_string((*iter)->height_) */: "");
   }
   out << std::endl;
 }
@@ -579,8 +592,7 @@ void AvlTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostrea
 // --------------------------------------
 template<typename T>
 AvlTree<T>::Node::Node(const T& element, Node* left, Node* right, Node* parent)
-    :element_{element}, left_{left}, right_{right}, parent_{parent}, balance_{0},
-    leftHeight_{0}, rightHeight_{0}
+    :element_{element}, left_{left}, right_{right}, parent_{parent}, height_{0}
 {
     // nothing else to do
 }
@@ -607,7 +619,7 @@ size_t AvlTree<T>::Node::size() const
 }
 
 template<typename T>
-void AvlTree<T>::Node::updateBalance()
+int AvlTree<T>::Node::getBalance()
 {
     /*int leftHeight = 0;
     if (left_ != nullptr) {
@@ -617,10 +629,17 @@ void AvlTree<T>::Node::updateBalance()
     if (right_ != nullptr) {
         rightHeight = right_->subtreeHeight();
     }*/
-    balance_ = rightHeight_ - leftHeight_;
+    return nodeHeight(right_) - nodeHeight(left_);
 }
 
 template<typename T>
+void AvlTree<T>::Node::updateHeight()
+{
+    int newHeight = std::max(nodeHeight(left_), nodeHeight(right_)) + 1;
+    height_ = newHeight != -1 ? newHeight : 0;
+}
+
+/*template<typename T>
 size_t AvlTree<T>::Node::subtreeHeight() const
 {
     // recursive base case (at a leaf)
@@ -638,7 +657,7 @@ size_t AvlTree<T>::Node::subtreeHeight() const
     }
     // the taller of the two subtrees is the height of the overall subtree
     return 1 + std::max(leftSize, rightSize);
-}
+}*/
 
 // --------------------------------------
 //
