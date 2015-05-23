@@ -11,7 +11,7 @@
 #define TWOTHREEFOUR_TREE_INCLUDED 1
 #include "abstracttree.hpp"
 //#include <cstddef>
-//#include <cassert>
+#include <cassert>
 //#include <iostream>
 #include <time.h>       // time
 #include <stack>        // std::queue
@@ -178,27 +178,27 @@ private:
     void printBranches(int branchLen, int nodeSpaceLen, int startLen,
      int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const;
 
-    bool is2node(Node*& here); ///< Checks if the node is a 2-node
+    bool is2node(Node*& here) const; ///< Checks if the node is a 2-node
 
-    bool is3node(Node*& here); ///< Checks if the node is a 3-node
+    bool is3node(Node*& here) const; ///< Checks if the node is a 3-node
 
-    bool is4node(Node*& here); ///< Checks if the node is a 4-node
+    bool is4node(Node*& here) const; ///< Checks if the node is a 4-node
 
-    bool isLeaf(Node*& here); ///< Checks if here is a leaf
+    bool isLeaf(Node*& here) const; ///< Checks if here is a leaf
 
     /**
      * \brief Checks if here is the first child of its parent
      *
      * \note Also checks if here is a valid node
      */
-    bool isFirstChild(Node*& here);
+    bool isFirstChild(Node*& here) const;
 
     /**
      * \brief Checks if here is the second child of its parent
      *
      * \note Also checks if here is a valid node
      */
-    bool isSecondChild(Node*& here);
+    bool isSecondChild(Node*& here) const;
 
     /**
      * \brief Checks if here is the third child of its parent
@@ -206,7 +206,7 @@ private:
      * \note Also checks if here is a valid node
      *       and if here's parent is a 3- or a 4- node (i.e. legal to have a third child)
      */
-    bool isThirdChild(Node*& here);
+    bool isThirdChild(Node*& here) const;
 
     /**
      * \brief Checks if here is the fourth child of its parent
@@ -214,9 +214,10 @@ private:
      * \note Also checks if here is a valid node
      *       and if here's parent is a 4-node (i.e. legal to have a fourth child)
      */
-    bool isFourthChild(Node*& here);
+    bool isFourthChild(Node*& here) const;
 
-    /* \brief Compares element to a 2-node's elements
+    /**
+     * \brief Compares element to a 2-node's elements
      *
      * \returns The index to which the element belongs in a 2-node (starting from 1)
      *
@@ -225,7 +226,8 @@ private:
      */
     size_t twoNodeIndex(Node*& here, const T& element);
 
-    /* \brief Compares element to a 3-node's elements
+    /**
+     * \brief Compares element to a 3-node's elements
      *
      * \returns The index to which the element belongs in a 3-node (starting from 1)
      *
@@ -234,6 +236,23 @@ private:
      *       Also checks if here is a 3-node
      */
     size_t threeNodeIndex(Node*& here, const T& element);
+    
+    /**
+     * \brief Compares the element to here's elements
+     *
+     * \returns The index to which the element belongs in the node (starting from 1)
+     *
+     * \note e.g. here's elements = [3, 5, 7]
+     *       belongs(here, 3) = 1
+     *       beongs(here, 5) = 2
+     *       belongs(here, 7) = 3
+     *       belongs(here, 9) = 4
+     *       belongs(2) = 1
+     *       belongs(4) = 2
+     *       belongs(6) = 3
+     *       belongs(8) = 4
+     */
+    size_t belongs(Node*& here, const T& element) const;
 
     /*
      * Splits a 4-node into two 2-nodes and pushes the middle key up to its parent
@@ -266,13 +285,18 @@ private:
 
     /**
      * \brief
-     * Tells whether a element is present in the tree
+     * Tells whether an element is present in the tree
+     *
+     * \returns The pointer to the next element
+     *          nullptr if the element is not present in the tree
      *
      * \param here The node start checking at
      * \param element The element to check if present
      *
      */
     Node* findNode(Node* here, const T& element) const;
+
+    bool deleteElement(const T& element);
 
     /**
     * \brief returns the height of the subtree with the given node as the root

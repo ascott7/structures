@@ -11,7 +11,7 @@ CXXFLAGS = -g -Wall -Wextra -pedantic -O2
 CXX = clang++ -std=c++11
 
 TARGETS = linkedlist-test randomtree-test splaytree-test avltree-test \
-	rbtree-test
+	rbtree-test twothreefourtree-test
 # good instructions for installing gtest on mac here
 # http://stackoverflow.com/questions/20746232/how-to-properly-setup-googletest
 # -on-os-x-aside-from-xcode
@@ -33,6 +33,7 @@ test: $(TARGETS) bench
 	./splaytree-test
 #	./avltree-test
 #	./rbtree-test
+	./twothreefourtree-test
 	./bench
 
 bench: bench.cpp $(TARGETS)
@@ -53,6 +54,9 @@ avltree: avltree-test
 rbtree: rbtree-test
 	./rbtree-test
 
+twothreefourtree: twothreefourtree-test
+	./twothreefourtree-test
+
 linkedlist-test: linkedlist-test.o otter.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
 
@@ -68,6 +72,9 @@ avltree-test: avltree-test.o otter.o
 rbtree-test: rbtree-test.o otter.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
 
+twothreefourtree-test: twothreefourtree-test.o otter.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(GTEST_LIB)
+
 # ----- Dependencies -----
 otter.o: otter.cpp otter.hpp
 linkedlist-test.o: linkedlist-test.cpp linkedlist.hpp linkedlist-private.hpp
@@ -75,3 +82,4 @@ randomtree-test.o: randomtree-test.cpp randomtree.hpp randomtree-private.hpp
 splaytree-test.o: splaytree-test.cpp splaytree.hpp splaytree-private.hpp
 avltree-test.o: avltree-test.cpp avltree.hpp avltree-private.hpp
 rbtree-test.o: rbtree-test.cpp rbtree.hpp rbtree-private.hpp
+twothreefourtree-test.o: twothreefourtree-test.cpp twothreefourtree.hpp twothreefourtree-private.hpp
