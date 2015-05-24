@@ -113,48 +113,63 @@ size_t twothreefourTree<T>::subtreeHeight(Node* here) const
 template<typename T>
 bool twothreefourTree<T>::contains(const T& element) const
 {
+    std::cout << "checking" << std::endl;
+    
     if (findNode(root_, element) == nullptr) {
+        std::cout << "hi" << std::endl;
         return false;
     } else {
+        std::cout << "bye" << std::endl;
         return true;
     }
 }
 
 template<typename T>
 typename twothreefourTree<T>::Node* twothreefourTree<T>::findNode(Node* here, const T& element) const
-{ 
+{
+    std::cout << "findNode called" << std::endl;
     size_t index = belongs(here, element);
+    std::cout << "successfully called belongs" << std::endl;
     
-    if (here == nullptr) {
+    if (index == 0) {
+        std::cout << "seg fault here 1" << std::endl;
         return nullptr;
     }
     
     else if (index == 1 && here->firstElement_ == element) {
+        std::cout << "seg fault here 2" << std::endl;
         return here;
     }
     else if (index == 1) {
+        std::cout << "seg fault here 3" << std::endl;
         return findNode(here->first_, element);
     }
     
     else if (index == 2 && here->secondElement_ == element) {
+        std::cout << "seg fault here 4" << std::endl;
         return here;
     }
     else if (index == 2) {
+        std::cout << "seg fault here 5" << std::endl;
         return findNode(here->second_, element);
     }
 
     else if (index == 3 && here->thirdElement_ == element) {
+        std::cout << "seg fault here 6" << std::endl;
         return here;
     }
     else if (index == 3) {
+        std::cout << "seg fault here 7" << std::endl;
         return findNode(here->third_, element);
     }
 
     else if (index == 4) {
+        std::cout << "seg fault here 8" << std::endl;
         return findNode(here->fourth_, element);
     }
 
     else { // index = 0
+        std::cout << "seg fault here 9" << std::endl;
         return nullptr;
     }
 }
@@ -162,8 +177,13 @@ typename twothreefourTree<T>::Node* twothreefourTree<T>::findNode(Node* here, co
 template<typename T>
 size_t twothreefourTree<T>::belongs(Node*& here, const T& element) const
 {
+    if (here == nullptr)
+        return 0;
+
+    std::cout << "belongs called" << std::endl;
     // Checking the element's 2-node index
-    if (is2node(here)) { 
+    if (is2node(here)) {
+        std::cout << "case: is2node" << std::endl; 
         if (element <= here->firstElement_) 
             return 1;
         else
@@ -171,6 +191,7 @@ size_t twothreefourTree<T>::belongs(Node*& here, const T& element) const
     }
     // Checking the element's 3-node index
     else if (is3node(here)) {
+        std::cout << "case: is3node" << std::endl; 
         if (element <= here->firstElement_) 
             return 1;
         else if (here->secondElement_ < element) // order matters
@@ -180,6 +201,7 @@ size_t twothreefourTree<T>::belongs(Node*& here, const T& element) const
     }
     // Checking the element's 4-node index
     else if (is4node(here)) {
+        std::cout << "case: is4node" << std::endl; 
         if (element <= here->firstElement_) 
             return 1;
         else if (here->thirdElement_ < element)
@@ -190,8 +212,7 @@ size_t twothreefourTree<T>::belongs(Node*& here, const T& element) const
             return 2;
     }
     // if here isn't a valid node (including nullptr)
-    else
-        return 0;
+    return 0;
 }
 
 template<typename T>
@@ -213,90 +234,42 @@ bool twothreefourTree<T>::insertNode(Node*& here, const T& element)
     if (is4node(here))
         split4node(here);
 
+    size_t index = belongs(here, element);
+
     // if we reach a leaf, insert at the leaf
-
-    // use belongs - if the element at the index where the element belongs to equals the element,
-    // then it is already inserted and we can't insert
-    if (isLeaf(here) && twoNodeIndex(here, element) != 0 && threeNodeIndex(here, element) != 0) {
-
-        // inserting into a 2-node
-        if (twoNodeIndex(here, element) == 1) {
-            here->secondElement_ = here->firstElement_;
-            here->firstElement_ = element;
-        }
-        else if (twoNodeIndex(here, element) == 2) {
-            here->secondElement_ = element;
-        }
-
-        // inserting into a 3-node
-        else if (threeNodeIndex(here, element) == 1) {
+    if (isLeaf(here)) {
+        if (index == 1 && here->firstElement_ != element) {
             here->thirdElement_ = here->secondElement_;
             here->secondElement_ = here->firstElement_;
             here->firstElement_ = element;
+            ++here->nodeType_;
+            return true;
         }
-        else if (threeNodeIndex(here, element) == 2) {
+        else if (index == 2 && here->secondElement_ != element) {
             here->thirdElement_ = here->secondElement_;
             here->secondElement_ = element;
+            ++here->nodeType_;
+            return true;
         }
-        else if (threeNodeIndex(here, element) == 3) {
-            here->thirdElement_ = element;
+        else { // either index equals 3 (something went wrong with the top-down algorithm!)
+               // or the element already exists
+            return false;
         }
-
-        ++here->nodeType_;
-        return true;
-
-        // if the element is already in the tree or here cannot be inserted at (is a nullptr or a 4-node), we can't insert
-        //else if (twoNodeIndex(here, element) == 0 || threeNodeIndex(here) == 0) { // optimization?
-        //    return false;
     }
-    
-    else if (isLeaf(here))
-        return false;
 
-    // if it's not the leaf, go down to the appropriate child and insert there
-    else if (twoNodeIndex(here, element) == 1 || threeNodeIndex(here, element) == 1) {
+    // if we're not at the leaf, go down to the appropriate subtree
+    else if (index == 1) {
         return insertNode(here->first_, element);
     }
-    else if (twoNodeIndex(here, element) == 2 || threeNodeIndex(here, element) == 2) {
+    else if (index == 2) {
         return insertNode(here->second_, element);
     }
-    else if (threeNodeIndex(here, element) == 3) {
+    else if (index == 3) {
         return insertNode(here->third_, element);
     }
-
-    else
+    else {
         return false;
-}
-
-template<typename T>
-size_t twothreefourTree<T>::twoNodeIndex(Node*& here, const T& element) {
-    if (!is2node(here))
-        return 0;
-
-    if (element < here->firstElement_) 
-        return 1;
-    else if (here->firstElement_ < element)
-        return 2;
-    else
-        return 0;
-}
-
-template<typename T>
-size_t twothreefourTree<T>::threeNodeIndex(Node*& here, const T& element) {
-    if (!is3node(here))
-        return 0;
-
-    if (element < here->firstElement_) 
-        return 1;
-
-    else if (here->secondElement_ < element) // order matters
-        return 3;
-
-    else if (element != here->secondElement_)
-        return 2;
-
-    else
-        return 0;
+    }
 }
 
 template<typename T>
@@ -311,13 +284,11 @@ bool twothreefourTree<T>::isLeaf(Node*& here) const
     if (here->fourth_ == nullptr)
         return false;
     return true;
-    //    return here->first_ == here->second_ == here->third_ == here->fourth_ == nullptr;
 }
 
 template<typename T>
 void twothreefourTree<T>::split4node(Node*& here)
 {
-
     //assert(is4node(here));    
     
     T midKey = here->secondElement_;
@@ -333,7 +304,7 @@ void twothreefourTree<T>::split4node(Node*& here)
         ++here->size_; // growing up!
     }
 
-    if (isFirstChild(here)) {
+    else if (isFirstChild(here)) {
         // fix the parent's pointers
         parent->first_ = leftChild;
         parent->second_ = rightChild;
@@ -346,7 +317,7 @@ void twothreefourTree<T>::split4node(Node*& here)
         ++parent->nodeType_;
     }
 
-    if (isSecondChild(here)) {
+    else if (isSecondChild(here)) {
         // fix the parent's pointers
         parent->second_ = leftChild;
         parent->third_ = rightChild;
@@ -358,7 +329,7 @@ void twothreefourTree<T>::split4node(Node*& here)
         ++parent->nodeType_;
     }
 
-    if (isThirdChild(here)) {
+    else if (isThirdChild(here)) {
         // fix the parent's pointers
         parent->third_ = leftChild;
         parent->fourth_ = rightChild;
@@ -417,8 +388,13 @@ bool twothreefourTree<T>::isFourthChild(Node*& here) const
 template<typename T>
 bool twothreefourTree<T>::is2node(Node*& here) const
 {
-    if (here->nodeType_ == 2)
+    std::cout << "is2node called" << std::endl; 
+    if (here->nodeType_ == 2) {
+        std::cout << "returning true for is2node" << std::endl; 
         return true;
+    }
+
+    std::cout << "returning false for is2node" << std::endl; 
     return false;
 }
 

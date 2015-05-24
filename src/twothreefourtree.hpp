@@ -32,6 +32,7 @@ class twothreefourTree : public AbstractTree<T> {
 private:
    class Iterator; // Forward declaration1
 
+
 public:
     typedef size_t size_type;
 
@@ -224,7 +225,7 @@ private:
      * \note For example, compareElement(here, 5) where here is a 2-node with its element {8} returns 1
      *       Also checks if here is a 2-node
      */
-    size_t twoNodeIndex(Node*& here, const T& element);
+//    size_t twoNodeIndex(Node*& here, const T& element);
 
     /**
      * \brief Compares element to a 3-node's elements
@@ -235,7 +236,7 @@ private:
      *       and compareElement(here, 5) where here is a 3-node with its elements {1, 3} returns 3
      *       Also checks if here is a 3-node
      */
-    size_t threeNodeIndex(Node*& here, const T& element);
+//    size_t threeNodeIndex(Node*& here, const T& element);
     
     /**
      * \brief Compares the element to here's elements
@@ -272,16 +273,6 @@ private:
      * \param element The element to insert
      */
     bool insertNode(Node*& here, const T& element);
-
-    /**
-    * \brief
-    * inserts a node into the root of the tree
-    * 
-    * \param here The node to insert at
-    * \param element The element to insert
-    *
-    */
-    bool insertNodeAtRoot(Node*& here, const T& element);
 
     /**
      * \brief
