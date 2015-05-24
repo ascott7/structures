@@ -6,3 +6,5 @@ avltree-test
 rbtree-test
 bench
 .DS_Store
+bench.dSYM/
+twothreefourtree-test
