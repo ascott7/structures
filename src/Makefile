@@ -4,6 +4,9 @@
 #
 #   make
 #
+# All tests can be run by typing
+#
+#   make test
 
 # ----- Make Macros ------
 
@@ -33,7 +36,7 @@ test: $(TARGETS) bench
 	./splaytree-test
 	./avltree-test
 #	./rbtree-test
-	./twothreefourtree-test
+#	./twothreefourtree-test
 	./bench
 
 bench: bench.cpp $(TARGETS)
