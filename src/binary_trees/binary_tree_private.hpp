@@ -1,37 +1,95 @@
 /**
- * \file splaytree-private.hpp
+ * \file binary_tree-private.hpp
  * \author Andrew Scott
  *
- * \brief implementation of templated splay tree class
+ * \brief implementation of basic binary tree functions common to all
+ * binary trees
  */
 
 template<typename T>
-SplayTree<T>::SplayTree()
-            : size_{0}, root_{nullptr}
-{
-    // nothing else to do
-}
-
-template<typename T>
-SplayTree<T>::~SplayTree()
+BinaryTree<T>::~BinaryTree()
 {
     delete root_;
 }
 
 template<typename T>
-size_t SplayTree<T>::size() const
+BinaryTree<T>::BinaryTree(const BinaryTree<T>& orig)
+            : size_{0}, root_{nullptr}
+{
+    for (iterator i = orig.begin(); i != orig.end(); ++i) {
+        insert(*i);
+    }
+}
+
+template<typename T>
+BinaryTree<T>& BinaryTree<T>::operator=(const BinaryTree<T>& rhs)
+{
+    BinaryTree<T> copy{rhs};
+    swap(copy);
+    return *this;
+}
+
+template<typename T>
+void BinaryTree<T>::swap(BinaryTree<T>& rhs)
+{
+    using std::swap;
+    swap(root_, rhs.root_);
+    swap(size_, rhs.size_);
+}
+
+template<typename T>
+void swap(BinaryTree<T>& lhs, BinaryTree<T>& rhs)
+{
+    lhs.swap(rhs);
+}
+
+template<typename T>
+size_t BinaryTree<T>::size() const
 {
     return size_;
 }
 
 template<typename T>
-size_t SplayTree<T>::height() const
+size_t BinaryTree<T>::height() const
 {
     return subtreeHeight(root_);
 }
 
 template<typename T>
-size_t SplayTree<T>::subtreeHeight(Node* here) const
+bool BinaryTree<T>::empty() const
+{
+    return (root_ == nullptr);
+}
+
+template<typename T>
+bool BinaryTree<T>::operator==(const BinaryTree<T>& rhs) const
+{
+    // if the sizes are different the trees are not equal
+    if (size() != rhs.size()) {
+        return false;
+    }
+
+    iterator thisIter = begin();
+    iterator rhsIter = rhs.begin();
+
+    while (thisIter != end()) {
+        if (*thisIter != *rhsIter) {
+            return false;
+        }
+        ++thisIter;
+        ++rhsIter;
+    }
+    return true;
+}
+
+template<typename T>
+bool BinaryTree<T>::operator!=(const BinaryTree<T>& rhs) const
+{
+    return !(*this == rhs);
+}
+
+template<typename T>
+size_t BinaryTree<T>::subtreeHeight(Node* here) const
 {
     // recursive base case
     if (here == nullptr) {
@@ -46,19 +104,17 @@ size_t SplayTree<T>::subtreeHeight(Node* here) const
 }
 
 template<typename T>
-bool SplayTree<T>::contains(const T& element) const
+bool BinaryTree<T>::contains(const T& element) const
 {
-    Node* elementNode = findNode(root_, element);
-    if (elementNode == nullptr) {
+    if (findNode(root_, element) == nullptr) {
         return false;
     } else {
-        splayToRoot(elementNode);
         return true;
     }
 }
 
 template<typename T>
-typename SplayTree<T>::Node* SplayTree<T>::findNode(Node* here, const T& element) const
+typename BinaryTree<T>::Node* BinaryTree<T>::findNode(Node* here, const T& element) const
 {
     if (here == nullptr) {
         return nullptr;
@@ -74,13 +130,12 @@ typename SplayTree<T>::Node* SplayTree<T>::findNode(Node* here, const T& element
     // element is not less than or greater than here->element_, so it must
     // be equal to here->element_
     else {
-        //splayToRoot(here);
         return here;
     }
 }
 
 template<typename T>
-bool SplayTree<T>::insert(const T& element)
+bool BinaryTree<T>::insert(const T& element)
 {
     if (insertNode(root_, element)) {
         ++size_;
@@ -90,7 +145,7 @@ bool SplayTree<T>::insert(const T& element)
 }
 
 template<typename T>
-bool SplayTree<T>::insertNode(Node*& here, const T& element)
+bool BinaryTree<T>::insertNode(Node*& here, const T& element)
 {
     // if we have an empty tree, make a new node
     if (here == nullptr) {
@@ -101,7 +156,10 @@ bool SplayTree<T>::insertNode(Node*& here, const T& element)
     else if (element < here->element_) {
         if (here->left_ == nullptr) {
             here->left_ = new Node(element, nullptr, nullptr, here);
-            splayToRoot(here->left_);
+            if (here->right_ == nullptr) {
+                ++here->height_;
+            }
+            checkBalanced(here->parent_, true);
             return true;
         } else {
             return insertNode(here->left_, element);
@@ -109,7 +167,10 @@ bool SplayTree<T>::insertNode(Node*& here, const T& element)
     } else if (element > here->element_) {
         if (here->right_ == nullptr) {
             here->right_ = new Node(element, nullptr, nullptr, here);
-            splayToRoot(here->right_);
+            if (here->left_ == nullptr){
+                ++here->height_;
+            }
+            checkBalanced(here->parent_, true);
             return true;
         } else {
             return insertNode(here->right_, element);
@@ -123,46 +184,7 @@ bool SplayTree<T>::insertNode(Node*& here, const T& element)
 }
 
 template<typename T>
-void SplayTree<T>::splayToRoot(Node* newRoot) const
-{
-    // base case (we are at the root)
-    if (newRoot->parent_ == nullptr) {
-        return;
-    }
-    // if we are a child of the root, rotate to become the root
-    else if (newRoot->parent_ == root_) {
-        if (root_->left_ == newRoot) {
-            rightRotate(root_);
-        } else {
-            leftRotate(root_);
-        }
-    }
-    // if we have a zig zag case where we go one direction then the other
-    else if (newRoot->parent_->left_ == newRoot ^ newRoot->parent_->parent_->left_ == newRoot->parent_) {
-        if (newRoot->parent_->left_ == newRoot) {
-            rightRotate(newRoot->parent_);
-            leftRotate(newRoot->parent_);
-        } else {
-            leftRotate(newRoot->parent_);
-            rightRotate(newRoot->parent_);
-        }
-        splayToRoot(newRoot);
-    } 
-    // if we have a zig zag case where we go the same direction twice
-    else {
-        if (newRoot->parent_->parent_->left_ == newRoot->parent_) {
-            rightRotate(newRoot->parent_->parent_);
-            rightRotate(newRoot->parent_);
-        } else {
-            leftRotate(newRoot->parent_->parent_);
-            leftRotate(newRoot->parent_);
-        }
-        splayToRoot(newRoot);
-    }
-}
-
-template<typename T>
-bool SplayTree<T>::deleteElement(const T& element)
+bool BinaryTree<T>::deleteElement(const T& element)
 {
     if (empty()) {
         return false;
@@ -202,7 +224,7 @@ bool SplayTree<T>::deleteElement(const T& element)
 }
 
 template<typename T>
-typename SplayTree<T>::Node* SplayTree<T>::getNextNode(Node* here)
+typename BinaryTree<T>::Node* BinaryTree<T>::getNextNode(Node* here)
 {
     iterator nextNode = Iterator(here);
     // go one to the right if we can
@@ -215,7 +237,7 @@ typename SplayTree<T>::Node* SplayTree<T>::getNextNode(Node* here)
 }
 
 template<typename T>
-bool SplayTree<T>::deleteOneElementTree(const T& element)
+bool BinaryTree<T>::deleteOneElementTree(const T& element)
 {
     if (root_->element_ == element) {
         delete root_;
@@ -228,7 +250,7 @@ bool SplayTree<T>::deleteOneElementTree(const T& element)
 }
 
 template<typename T>
-void SplayTree<T>::deleteLeaf(Node* deletee)
+void BinaryTree<T>::deleteLeaf(Node* deletee)
 {
     Node* parent = deletee->parent_;
     if (deletee->element_ < parent->element_) {
@@ -248,28 +270,26 @@ void SplayTree<T>::deleteLeaf(Node* deletee)
             parent->right_ = nullptr;
         }
     }
+    checkBalanced(parent, false);
     --size_;
 }
 
 template<typename T>
-void SplayTree<T>::deleteStick(Node* deletee, bool deleteLeft)
+void BinaryTree<T>::deleteStick(Node* deletee, bool deleteLeft)
 {
     Node* newChild;
-
     // find the element to delete's child
     if (deletee->left_ == nullptr) {
         newChild = deletee->right_;
-    }
-    else {
+    } else {
         newChild = deletee->left_;
     }
     // if the node to delete was the left child of the parent, make the
     // node's child its parent's left node
     if (deleteLeft) {
         deletee->parent_->left_ = newChild;
-    }
-    // otherwise make it its parent's right node
-    else {
+    } else {
+        // otherwise make the node child its parent's right child
         deletee->parent_->right_ = newChild;
     }
     newChild->parent_ = deletee->parent_;
@@ -278,11 +298,12 @@ void SplayTree<T>::deleteStick(Node* deletee, bool deleteLeft)
     deletee->left_ = nullptr;
     deletee->right_ = nullptr;
     delete deletee;
+    checkBalanced(newChild->parent_, false);
     --size_;
 }
 
 template<typename T>
-void SplayTree<T>::deleteTwoChildNode(Node* deletee)
+void BinaryTree<T>::deleteTwoChildNode(Node* deletee)
 {
     // replace the node to delete with the next node, then delete that
     // replacement's old node location
@@ -305,7 +326,7 @@ void SplayTree<T>::deleteTwoChildNode(Node* deletee)
 //   / \              / \
 //  A   C            C   E
 template <typename T> 
-void SplayTree<T>::rightRotate(Node* top) const
+void BinaryTree<T>::rightRotate(Node* top)
 {
     Node* newRoot = top->left_;          // b is d's left child
     // if C exists, we need to change it's parent to be d
@@ -317,6 +338,10 @@ void SplayTree<T>::rightRotate(Node* top) const
     top->parent_ = newRoot;           // b is d's parent
     newRoot->right_= top;             // d becomes right child of b
     newRoot->parent_ = topParent;     // d's old parent is b's parent
+
+    top->updateHeight();
+    newRoot->updateHeight();
+    
     // we then need to update the node pointing to our new top
     if (newRoot->parent_ == nullptr) { 
         root_ = newRoot;
@@ -327,7 +352,6 @@ void SplayTree<T>::rightRotate(Node* top) const
             newRoot->parent_->right_ = newRoot;
         }
     }
-    top = newRoot;                    // top is now b
 }
 
 //   left rotation:
@@ -337,7 +361,7 @@ void SplayTree<T>::rightRotate(Node* top) const
 //       / \         / \
 //      C   E       A   C
 template <typename T> 
-void SplayTree<T>::leftRotate(Node* top) const
+void BinaryTree<T>::leftRotate(Node* top) 
 {
     Node* newRoot = top->right_;      // d is b's right child
     // if C exists, we need to change it's parent to be b
@@ -349,6 +373,10 @@ void SplayTree<T>::leftRotate(Node* top) const
     top->parent_ = newRoot;           // d is b's parent
     newRoot->left_= top;              // b becomes left child of d
     newRoot->parent_ = topParent;     // b's old parent is d's parent
+
+    top->updateHeight();
+    newRoot->updateHeight();
+
     // we then need to update the node pointing to our new top
     if (newRoot->parent_ == nullptr) { 
         root_ = newRoot;
@@ -359,25 +387,33 @@ void SplayTree<T>::leftRotate(Node* top) const
             newRoot->parent_->right_ = newRoot;
         }
     }
-    top = newRoot;                    // top is now d 
 }
 
 template<typename T>
-std::ostream& SplayTree<T>::printStatistics(std::ostream& out) const
+int BinaryTree<T>::nodeHeight(Node* here)
+{
+    if (here == nullptr) {
+        return -1;
+    }
+    return here->height_;
+}
+
+template<typename T>
+std::ostream& BinaryTree<T>::printStatistics(std::ostream& out) const
 {
     out << "height " << height() << std::endl;
     return out;
 }
 
 template <typename T>
-std::ostream& SplayTree<T>::print(std::ostream& out) const
+std::ostream& BinaryTree<T>::print(std::ostream& out) const
 {
     printPretty(root_, 1, 1, out);
     return out;
 }
 
 template<typename T>
-typename SplayTree<T>::iterator SplayTree<T>::begin() const
+typename BinaryTree<T>::iterator BinaryTree<T>::begin() const
 {
     Node* current = root_;
     // if tree is empty, we don't want to dereference current
@@ -391,7 +427,7 @@ typename SplayTree<T>::iterator SplayTree<T>::begin() const
 }
 
 template<typename T>
-typename SplayTree<T>::iterator SplayTree<T>::end() const
+typename BinaryTree<T>::iterator BinaryTree<T>::end() const
 {
     return Iterator(nullptr);
 }
@@ -404,7 +440,7 @@ typename SplayTree<T>::iterator SplayTree<T>::end() const
 // --------------------------------------
 template<typename T>
 // Print the arm branches (eg, /    \ ) on a line
-void SplayTree<T>::printBranches(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
+void BinaryTree<T>::printBranches(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
   for (int i = 0; i < nodesInThisLevel / 2; i++) {  
     out << ((i == 0) ? std::setw(startLen-1) : std::setw(nodeSpaceLen-2)) << "" << ((*iter++) ? "/" : " ");
@@ -415,7 +451,7 @@ void SplayTree<T>::printBranches(int branchLen, int nodeSpaceLen, int startLen, 
 
 template<typename T>
 // Print the branches and node (eg, ___10___ )
-void SplayTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
+void BinaryTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
   for (int i = 0; i < nodesInThisLevel; i++, iter++) {
     out << ((i == 0) ? std::setw(startLen) : std::setw(nodeSpaceLen)) << "" << ((*iter && (*iter)->left_) ? std::setfill('_') : std::setfill(' '));
@@ -429,7 +465,7 @@ void SplayTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, int
     } else {
         parent = "-";
     }*/
-    out << std::setw(branchLen+2) << ((*iter) ? std::to_string((*iter)->element_) : "");
+    out << std::setw(branchLen+2) << ((*iter) ? std::to_string((*iter)->element_)/* + " " + std::to_string((*iter)->height_) */: "");
     out << ((*iter && (*iter)->right_) ? std::setfill('_') : std::setfill(' ')) << std::setw(branchLen) << "" << std::setfill(' ');
   }
   out << std::endl;
@@ -437,20 +473,10 @@ void SplayTree<T>::printNodes(int branchLen, int nodeSpaceLen, int startLen, int
 
 template<typename T>
 // Print the leaves only (just for the bottom row)
-void SplayTree<T>::printLeaves(int indentSpace, int level, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
+void BinaryTree<T>::printLeaves(int indentSpace, int level, int nodesInThisLevel, const std::deque<Node*>& nodesQueue, std::ostream& out) const{
   typename std::deque<Node*>::const_iterator iter = nodesQueue.begin();
-  /*std::string parent;
-  if (*iter != nullptr) {
-        if ((*iter)->parent_ != nullptr) {
-            parent = std::to_string((*iter)->parent_->element_);
-        } else {
-            parent = "-";
-        }
-    } else {
-        parent = "-";
-    }*/
   for (int i = 0; i < nodesInThisLevel; i++, iter++) {
-    out << ((i == 0) ? std::setw(indentSpace+2) : std::setw(2*level+2)) << ((*iter) ? std::to_string((*iter)->element_) : "");
+    out << ((i == 0) ? std::setw(indentSpace+2) : std::setw(2*level+2)) << ((*iter) ? std::to_string((*iter)->element_)/* + " " + std::to_string((*iter)->height_) */: "");
   }
   out << std::endl;
 }
@@ -460,7 +486,7 @@ template<typename T>
 // @ param
 // level  Control how wide you want the tree to sparse (eg, level 1 has the minimum space between nodes, while level 2 has a larger space between nodes)
 // indentSpace  Change this to add some indent space to the left (eg, indentSpace of 0 means the lowest level of the left node will stick to the left margin)
-void SplayTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostream& out) const {
+void BinaryTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostream& out) const {
   int h = subtreeHeight(root_); //maxHeight(root);
   int nodesInThisLevel = 1;
 
@@ -496,25 +522,25 @@ void SplayTree<T>::printPretty(Node* root, int level, int indentSpace, std::ostr
 
 // --------------------------------------
 //
-// Implementation of SplayTree::Node
+// Implementation of BinaryTree::Node
 //
 // --------------------------------------
 template<typename T>
-SplayTree<T>::Node::Node(const T& element, Node* left, Node* right, Node* parent)
-    :element_{element}, left_{left}, right_{right}, parent_{parent}
+BinaryTree<T>::Node::Node(const T& element, Node* left, Node* right, Node* parent)
+    :element_{element}, left_{left}, right_{right}, parent_{parent}, height_{0}
 {
     // nothing else to do
 }
 
 template<typename T>
-SplayTree<T>::Node::~Node()
+BinaryTree<T>::Node::~Node()
 {
     delete left_;
     delete right_;
 }
 
 template<typename T>
-size_t SplayTree<T>::Node::size() const
+size_t BinaryTree<T>::Node::size() const
 {
     size_t size = 1;
 
@@ -527,18 +553,62 @@ size_t SplayTree<T>::Node::size() const
     return size;
 }
 
-// --------------------------------------
-// Implementation of SplayTree::Iterator
-// --------------------------------------
 template<typename T>
-SplayTree<T>::Iterator::Iterator(Node* index)
+int BinaryTree<T>::Node::getBalance()
+{
+    /*int leftHeight = 0;
+    if (left_ != nullptr) {
+        leftHeight = left_->subtreeHeight();
+    } 
+    int rightHeight = 0;
+    if (right_ != nullptr) {
+        rightHeight = right_->subtreeHeight();
+    }*/
+    return nodeHeight(right_) - nodeHeight(left_);
+}
+
+template<typename T>
+void BinaryTree<T>::Node::updateHeight()
+{
+    int newHeight = std::max(nodeHeight(left_), nodeHeight(right_)) + 1;
+    height_ = newHeight != -1 ? newHeight : 0;
+}
+
+/*template<typename T>
+size_t BinaryTree<T>::Node::subtreeHeight() const
+{
+    // recursive base case (at a leaf)
+    if (left_ == nullptr && right_ == nullptr) {
+        return 1;
+    }
+    // recursively get the left and right subtree heights
+    size_t leftSize = 0;
+    if (left_ != nullptr) {
+        leftSize = left_->subtreeHeight();
+    }
+    size_t rightSize = 0;
+    if (right_ != nullptr) {
+        rightSize = right_->subtreeHeight();
+    }
+    // the taller of the two subtrees is the height of the overall subtree
+    return 1 + std::max(leftSize, rightSize);
+}*/
+
+// --------------------------------------
+//
+// Implementation of BinaryTree::Iterator
+//
+// --------------------------------------
+
+template<typename T>
+BinaryTree<T>::Iterator::Iterator(Node* index)
     : current_{index}
 {
     // Nothing else to do.
 }
 
 template<typename T>
-typename SplayTree<T>::Iterator& SplayTree<T>::Iterator::operator++()
+typename BinaryTree<T>::Iterator& BinaryTree<T>::Iterator::operator++()
 {
     bool lastElement = false;
     // empty tree
@@ -606,7 +676,7 @@ typename SplayTree<T>::Iterator& SplayTree<T>::Iterator::operator++()
 }
 
 template<typename T>
-typename SplayTree<T>::Iterator& SplayTree<T>::Iterator::operator--()
+typename BinaryTree<T>::Iterator& BinaryTree<T>::Iterator::operator--()
 {
     // maybe something to handle -- on end()?
 
@@ -667,19 +737,19 @@ typename SplayTree<T>::Iterator& SplayTree<T>::Iterator::operator--()
 }
 
 template<typename T>
-T& SplayTree<T>::Iterator::operator*() const
+T& BinaryTree<T>::Iterator::operator*() const
 {
     return current_->element_;
 }
 
 template<typename T>
-bool SplayTree<T>::Iterator::operator==(const Iterator& rhs) const
+bool BinaryTree<T>::Iterator::operator==(const Iterator& rhs) const
 {
     return (current_ == rhs.current_);
 }
 
 template<typename T>
-bool SplayTree<T>::Iterator::operator!=(const Iterator& rhs) const
+bool BinaryTree<T>::Iterator::operator!=(const Iterator& rhs) const
 {
     return !(*this == rhs);
 }

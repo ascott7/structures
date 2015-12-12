@@ -9,14 +9,10 @@
 
 #ifndef RANDOM_TREE_INCLUDED
 #define RANDOM_TREE_INCLUDED 1
-#include "abstracttree.hpp"
+#include "binary_tree.hpp"
 #include "pcg-cpp-0.98/include/pcg_random.hpp"
-//#include <cstddef>
-//#include <cassert>
-//#include <iostream>
 #include <time.h>       // time
 #include <stack>        // std::queue
-//#include <list>
 #include <iomanip>
 #include <cmath>
 
@@ -27,41 +23,19 @@ template <typename T>
 * \brief A templated random tree
 */
 
-class RandomTree : public AbstractTree<T> {
+class RandomTree : public BinaryTree<T> {
 
 private:
-   class Iterator; // Forward declaration1
+   class Iterator; // Forward declaration
 
 public:
-    typedef size_t              size_type;
+
     /**
     * \brief 
     * Default Constructor
     *
     */
     RandomTree();
-
-    /**
-    * \brief
-    * Copy Constructor
-    *
-    */
-    RandomTree<T>(const RandomTree<T>& orig);
-
-    /**
-    * \brief
-    * Assignment Operator
-    *
-    */
-    RandomTree<T>& operator=(const RandomTree<T>& rhs);
-
-    /**
-    * \brief
-    * Random Tree swap function
-    *
-    *
-    */
-    void swap(RandomTree<T>& rhs);
 
     /**
     * \brief 

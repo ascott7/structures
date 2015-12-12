@@ -10,7 +10,7 @@
  *
  */
 
-#include "splaytree.hpp"
+#include "splay_tree.hpp"
 #include <iostream>
 #include <stdlib.h>      // rand(), srand()
 #include <time.h>       // time

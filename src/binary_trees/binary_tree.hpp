@@ -1,5 +1,5 @@
 /**
- * \file base_binary_tree.hpp
+ * \file binary_tree.hpp
  *
  * \author Andrew Scott
  *
@@ -20,27 +20,25 @@
 #include <iomanip>
 #include <cmath>
 
-template <typename T>
-
 /**
 * \class BinaryTree
 * \brief A base binary tree class, containing code that is common to all binary trees
 */
 
-public BinaryTree<T>{
+template <typename T>
+class BinaryTree {
 
-private:
-   class Iterator; // Forward declaration
+protected:
+    class Iterator; // Forward declaration
 
 public:
-
-   
+    
     /**
     * \brief 
     * Destructor
     *
     */
-    ~BinaryTree();
+    virtual ~BinaryTree() = 0;
    
     /**
     * \brief
@@ -140,7 +138,7 @@ public:
     * \brief
     * returns true if the tree is empty, false otherwise
     */
-    bool empty();
+    bool empty() const;
 
     /**
     * \brief returns true if the tree is balanced, false otherwise
@@ -169,15 +167,13 @@ public:
     std::ostream& printStatistics(std::ostream& out) const;
 
 
-private:
+protected:
     struct Node {
         T element_;            ///> the element at this node
         Node* left_;           ///> this node's left child
         Node* right_;          ///> this node's right child
         Node* parent_;         ///> this node's parent
         int height_;           ///> this node's height
-        //size_t leftHeight_;  ///> this node's right subtree's height
-        //size_t rightHeight_; ///> this node's left subtree's height
         /**
         * \brief Node constructor
         *
@@ -205,7 +201,7 @@ private:
         Node& operator=(const Node&) = delete; // disable assignment operator
     };
     size_t size_;
-    Node* root_;
+    mutable Node* root_;
 
     /**
     * \brief prints the tree to the terminal so it actually looks like a tree
@@ -251,7 +247,7 @@ private:
      * \param here The node to insert at
      * \param element The element to insert
      */
-    bool insertNode(Node*& here, const T& element);
+    virtual bool insertNode(Node*& here, const T& element) = 0;
 
     /**
     * \brief
@@ -261,7 +257,7 @@ private:
     * \param element The element to insert
     *
     */
-    bool insertNodeAtRoot(Node*& here, const T& element);
+    virtual bool insertNodeAtRoot(Node*& here, const T& element) = 0;
 
     /**
      * \brief
@@ -327,7 +323,7 @@ private:
         bool operator!=(const Iterator& other) const;
 
     private:
-        friend class AvlTree;
+        friend class BinaryTree;
         Iterator(Node* index);
         Node* current_;
     };

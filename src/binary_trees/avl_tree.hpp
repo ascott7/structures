@@ -27,7 +27,7 @@ template <typename T>
 * \brief A templated random tree
 */
 
-class AvlTree : public AbstractTree<T>{
+class AvlTree : public BinaryTree<T>{
 
 private:
    class Iterator; // Forward declaration1

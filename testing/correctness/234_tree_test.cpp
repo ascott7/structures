@@ -10,7 +10,7 @@
  *
  */
 
-#include "234tree.hpp"
+#include "234_tree.hpp"
 #include <iostream>
 #include <stdlib.h>      // rand(), srand()
 #include <time.h>       // time
